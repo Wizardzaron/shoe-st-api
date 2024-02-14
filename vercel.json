@@ -1,0 +1,6 @@
+{
+    "name": "shoe-st-api",
+    "routes": [
+      { "src": "/(.*)", "dest": "shoeAPI.py" }
+    ]
+}
