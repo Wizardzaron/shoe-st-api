@@ -1,1 +1,6 @@
-Flask
+flask
+email_validator == 2.1.0
+datetime == 5.4
+flask-jwt-extended == 4.6.0
+psycopg2 == 2.9.9
+flask-cors == 4.0.0
