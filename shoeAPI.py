@@ -107,6 +107,11 @@ def shoeimages():
         info =cur.fetchall()
         columns = ('images','item_id', 'descript', 'names', 'brand')
 
+        msg = jsonify('Query inserted successfully')
+        msg.headers['Access-Control-Allow-Methods'] = 'GET'
+        msg.headers['Access-Control-Allow-Credentials'] = 'true'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
+
         # creating dictionary
         for row in info:
             print(f"trying to serve {row}", file=sys.stderr)
@@ -133,6 +138,11 @@ def shoedata_get():
         info = cur.fetchall()
 
         columns = ('names', 'category', 'brand', 'color', 'gender', 'shoesize','price' ,'images', 'descript')
+
+        msg = jsonify('Query inserted successfully')
+        msg.headers['Access-Control-Allow-Methods'] = 'GET'
+        msg.headers['Access-Control-Allow-Credentials'] = 'true'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
 
         # creating dictionary
         for row in info:
