@@ -215,7 +215,7 @@ def login():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
             
             #print("Did execute")
             
@@ -272,7 +272,7 @@ def userdata_get():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
          
         #id = request.args.get('id')
         #id = session.get('id')
@@ -418,7 +418,7 @@ def signup_post():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
 
 
     except Exception as err:
