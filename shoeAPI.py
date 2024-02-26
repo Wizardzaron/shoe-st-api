@@ -201,21 +201,21 @@ def login():
     
     try:
 
+
+        msg = jsonify('Query inserted successfully')
+        msg.headers['Access-Control-Allow-Methods'] = 'POST'
+        msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+
         username = request.form.get('username')
         passwd = request.form.get('passwd')
-
-
 
         #NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
         getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = %s AND passwd = %s'''
         cur.execute(getCountByUsernameAndPassword, [username, passwd])
 
-        
-        msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'POST'
-        msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+    
             
             #print("Did execute")
             
