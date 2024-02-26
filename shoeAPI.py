@@ -275,8 +275,7 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
          
         #id = request.args.get('id')
-        #id = session.get('id')
-        id = 2
+        id = session.get('id')
         print("id + ", id)
         getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
 
