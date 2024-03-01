@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, abort, current_app,jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response ,current_app,jsonify
 from datetime import date, datetime, timedelta
 from flask import send_from_directory
 from functools import wraps
@@ -205,7 +205,7 @@ def login():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        msg.headers['Access-Control-Allow-Origin'] = '*'
 
         username = request.form.get('username')
         passwd = request.form.get('passwd')
@@ -225,15 +225,17 @@ def login():
 
         if countOfUsernameAndPassword[0] == 0:
             print('setting logged in to False')
-            session['loggedin'] = False
+            #session['loggedin'] = False
             #token = create_token(user_name, session['loggedin'])
             
             #return jsonify(token)
             print('about to return False')
-            s = str(session['loggedin'])
-            t = '{' + f'"loggedin":"{str(s)}"' + '}'
-            print(t)
-            return t        
+            #s = str(session['loggedin'])
+            #t = '{' + f'"loggedin":"{str(s)}"' + '}'
+            #print(t)
+            resp = make_response("usernotloggedin", 401)
+
+            return resp    
 
 
         getId = '''SELECT id FROM customer WHERE username = %s AND passwd = %s'''
@@ -242,7 +244,7 @@ def login():
 
         #session['Authorization'] = token
         # sessions carry data over the website
-        session['loggedin'] = True
+        #session['loggedin'] = True
 
         session['username'] = username
 
@@ -254,11 +256,12 @@ def login():
         #print("at the end")
         print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
         s = str(session['loggedin'])
-        i = str(session['id'])
-        t = '{' + f'"loggedin":"{str(s)}"' + '}'
-        print(t)
+        i = session['id']
+        t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
+        resp = make_response("userloggedin", 200)
+        resp.set_cookie('userID', id )
 
-        return t
+        return resp
 
     except Exception as e:
         print("An error occurred:", str(e))
@@ -272,10 +275,10 @@ def userdata_get():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        msg.headers['Access-Control-Allow-Origin'] = '*'
          
         #id = request.args.get('id')
-        id = session.get('id')
+        id = request.cookies.get('userID')
         print("id + ", id)
         getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
 
