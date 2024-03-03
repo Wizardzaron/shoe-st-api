@@ -237,7 +237,8 @@ def login():
             #t = '{' + f'"loggedin":"{str(s)}"' + '}'
             #print(t)
             resp = make_response("usernotloggedin", 401)
-
+            #used to reset connection after bad query transaction
+            conn.rollback()
             return resp    
 
 
