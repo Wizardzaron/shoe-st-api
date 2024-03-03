@@ -105,6 +105,7 @@ def shoeimages():
         getImages = '''SELECT images, item_id, descript, names, brand FROM shoes'''
         cur.execute(getImages)
         info =cur.fetchall()
+        print(info)
         columns = ('images','item_id', 'descript', 'names', 'brand')
 
         msg = jsonify('Query inserted successfully')
@@ -120,6 +121,8 @@ def shoeimages():
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImages, str(e))
+        #used to reset connection after bad query transaction
+        conn.rollback()
         return jsonify(msg)
 
     return rows
