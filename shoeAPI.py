@@ -258,17 +258,21 @@ def login():
 
         #token = create_token(user_name, session['loggedin'])
         #print("at the end")
-        print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
-        s = str(session['loggedin'])
-        i = session['id']
-        t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
+        # print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
+        # s = str(session['loggedin'])
+        # i = session['id']
+        # t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
         resp = make_response("userloggedin", 200)
-        resp.set_cookie('userID', id )
+        resp.set_cookie('userID', id, path='/')
 
-        return resp
+        
 
     except Exception as e:
-        print("An error occurred:", str(e))
+        msg = 'Query Failed: %s\nError: %s' % (getId, str(e))
+        conn.rollback()
+        return jsonify(msg)
+
+    return resp
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
