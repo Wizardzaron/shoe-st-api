@@ -111,7 +111,7 @@ def shoeimages():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app'
 
         # creating dictionary
         for row in info:
