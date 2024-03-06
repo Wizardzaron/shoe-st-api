@@ -122,7 +122,7 @@ def shoeimages():
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImages, str(e))
         #used to reset connection after bad query transaction
-        conn.rollback()
+        #conn.rollback()
         return jsonify(msg)
 
     return rows
