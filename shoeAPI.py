@@ -40,10 +40,10 @@ conn = psycopg2.connect(
 def check_connection():
     connection = conn.closed
     if(connection != 0):
-        return "No connection", 404
+        return jsonify({"message": "No connection"}), 404
 
     else:
-        return "Connection is established", 200
+        return jsonify({"message": "Connection is established"}), 200
 
 
 @app.route('/updateshoe', methods=['PATCH'])
