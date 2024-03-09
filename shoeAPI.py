@@ -34,9 +34,17 @@ conn = psycopg2.connect(
 )
 
 # DATABASE_URL = os.environ.get('DATABASE_URL')
-
-
 # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+
+@app.route('/connect', methods=['GET'])
+def check_connection():
+    connection = conn.closed
+    if(connection != 0):
+        return jsonify({"message": "No connection"}), 404
+
+    else:
+        return jsonify({"message": "Connection is established"}), 200
+
 
 @app.route('/updateshoe', methods=['PATCH'])
 def shoedata_update():
@@ -97,6 +105,8 @@ def shoedata_post():
 
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages():
+
+    #print(conn.closed)
 
     cur = conn.cursor()
     rows = []
