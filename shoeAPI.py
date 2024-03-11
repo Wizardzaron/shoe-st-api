@@ -29,6 +29,8 @@ conn = None
 
 def connect_to_database():
 
+    global conn
+
     conn = psycopg2.connect(
         host=DB_HOST,
         port=DB_PORT,
@@ -123,6 +125,7 @@ def shoedata_post():
 
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
