@@ -45,6 +45,7 @@ def connect_to_database():
 
 @app.route('/connect', methods=['GET'])
 def check_connection():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
     connection = conn.closed
@@ -57,6 +58,7 @@ def check_connection():
 
 @app.route('/updateshoe', methods=['PATCH'])
 def shoedata_update():
+    global conn
     #These 4 lines of code will ensure that the connection is always established, even if it's lost
     if not conn or conn.closed:
         connect_to_database()
@@ -87,6 +89,7 @@ def shoedata_update():
 
 @app.route('/addshoe', methods=['POST'])
 def shoedata_post():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -162,6 +165,7 @@ def shoeimages():
 
 @app.route('/shoedata', methods=['GET'])
 def shoedata_get():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -198,6 +202,7 @@ def shoedata_get():
 
 @app.route('/shoebrand', methods=['GET'])
 def shoebrand_get():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -241,6 +246,7 @@ def shoebrand_get():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -321,6 +327,7 @@ def login():
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -357,6 +364,7 @@ def userdata_get():
 
 @app.route('/alluserdata', methods=['GET'])
 def all_userdata_get():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -386,6 +394,7 @@ def all_userdata_get():
 
 @app.route('/ordercreate', methods=['POST'])
 def order_post():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -422,6 +431,7 @@ def order_post():
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
+    global conn
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
