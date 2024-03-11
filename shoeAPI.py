@@ -43,6 +43,8 @@ def connect_to_database():
 
 @app.route('/connect', methods=['GET'])
 def check_connection():
+    if not conn or conn.closed:
+        connect_to_database()
     connection = conn.closed
     if(connection != 0):
         return jsonify({"message": "No connection"}), 503
