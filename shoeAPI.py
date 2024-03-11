@@ -25,10 +25,10 @@ DB_NAME = 'verceldb'
 DB_USER = 'default'
 DB_PASS = 'ugJZCc1av6ob'
 
+conn = None
 
 def connect_to_database():
 
-    global conn 
     conn = psycopg2.connect(
         host=DB_HOST,
         port=DB_PORT,
