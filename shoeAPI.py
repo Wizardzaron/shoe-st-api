@@ -30,7 +30,8 @@ conn = psycopg2.connect(
     port=DB_PORT,
     dbname=DB_NAME,
     user=DB_USER,
-    password=DB_PASS
+    password=DB_PASS,
+    keepalives_idle=3000
 )
 
 # DATABASE_URL = os.environ.get('DATABASE_URL')
