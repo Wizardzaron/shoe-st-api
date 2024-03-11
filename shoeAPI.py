@@ -25,14 +25,18 @@ DB_NAME = 'verceldb'
 DB_USER = 'default'
 DB_PASS = 'ugJZCc1av6ob'
 
-conn = psycopg2.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASS,
-    keepalives_idle=3000
-)
+
+def connect_to_database():
+
+    global conn 
+    conn = psycopg2.connect(
+        host=DB_HOST,
+        port=DB_PORT,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS,
+        keepalives_idle=3000
+    )
 
 # DATABASE_URL = os.environ.get('DATABASE_URL')
 # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
@@ -41,7 +45,7 @@ conn = psycopg2.connect(
 def check_connection():
     connection = conn.closed
     if(connection != 0):
-        return jsonify({"message": "No connection"}), 404
+        return jsonify({"message": "No connection"}), 503
 
     else:
         return jsonify({"message": "Connection is established"}), 200
@@ -49,6 +53,12 @@ def check_connection():
 
 @app.route('/updateshoe', methods=['PATCH'])
 def shoedata_update():
+    #These 4 lines of code will ensure that the connection is always established, even if it's lost
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
+
     cur = conn.cursor()
     
     itemid = request.form.get('itemid')
@@ -73,6 +83,11 @@ def shoedata_update():
 
 @app.route('/addshoe', methods=['POST'])
 def shoedata_post():
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
+    
     cur = conn.cursor()
 
     itemid = request.form.get('itemid')
@@ -106,8 +121,10 @@ def shoedata_post():
 
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages():
-
-    #print(conn.closed)
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
     rows = []
@@ -140,6 +157,10 @@ def shoeimages():
 
 @app.route('/shoedata', methods=['GET'])
 def shoedata_get():
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
     try:
@@ -172,6 +193,10 @@ def shoedata_get():
 
 @app.route('/shoebrand', methods=['GET'])
 def shoebrand_get():
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
     try:
@@ -211,6 +236,10 @@ def shoebrand_get():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     
     try:
@@ -287,7 +316,10 @@ def login():
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
-
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
     try:
@@ -320,6 +352,10 @@ def userdata_get():
 
 @app.route('/alluserdata', methods=['GET'])
 def all_userdata_get():
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
     rows = []
@@ -345,7 +381,10 @@ def all_userdata_get():
 
 @app.route('/ordercreate', methods=['POST'])
 def order_post():
-
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
     brand = request.form.get('brand')
@@ -378,7 +417,10 @@ def order_post():
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
-
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
     data = request.json
