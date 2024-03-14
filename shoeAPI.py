@@ -303,7 +303,7 @@ def login():
 
         session['username'] = username
 
-        session['id'] = id
+        session['id'] = str(id)
             
         print("session id does exist: ", session.get('id'))
 
