@@ -279,18 +279,18 @@ def login():
 
         if countOfUsernameAndPassword[0] == 0:
             print('setting logged in to False')
-            #session['loggedin'] = False
+            session['loggedin'] = "False"
             #token = create_token(user_name, session['loggedin'])
             
             #return jsonify(token)
             print('about to return False')
-            #s = str(session['loggedin'])
-            #t = '{' + f'"loggedin":"{str(s)}"' + '}'
+            s = str(session['loggedin'])
+            t = '{' + f'"loggedin":"{str(s)}"' + '}'
             #print(t)
-            resp = make_response("usernotloggedin", 401)
+            # resp = make_response("usernotloggedin", 401)
             #used to reset connection after bad query transaction
             conn.rollback()
-            return resp    
+            return t    
 
 
         getId = '''SELECT id FROM customer WHERE username = %s AND passwd = %s'''
@@ -299,23 +299,23 @@ def login():
 
         #session['Authorization'] = token
         # sessions carry data over the website
-        #session['loggedin'] = True
+        session['loggedin'] = "True"
 
         session['username'] = username
 
-        session['id'] = id
+        session['id'] = str(id)
             
         print("session id does exist: ", session.get('id'))
 
         #token = create_token(user_name, session['loggedin'])
         #print("at the end")
         # print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
-        # s = str(session['loggedin'])
-        # i = session['id']
-        # t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
-        resp = make_response("userloggedin", 200)
-        resp.set_cookie('userID', id, path='/')
-
+        s = str(session['loggedin'])
+        i = session['id']
+        t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
+        # resp = make_response("userloggedin", 200)
+        # resp.set_cookie('userID', id, path='/')
+        return t
         
 
     except Exception as e:
@@ -323,7 +323,7 @@ def login():
         conn.rollback()
         return jsonify(msg)
 
-    return resp
+    #return resp
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
@@ -340,8 +340,9 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
          
-        #id = request.args.get('id')
-        id = request.cookies.get('userID')
+        id = session['id']
+        id = int(id)
+        #id = request.cookies.get('userID')
         print("id + ", id)
         getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
 
