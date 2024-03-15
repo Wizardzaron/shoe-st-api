@@ -280,15 +280,11 @@ def login():
 
         if countOfUsernameAndPassword[0] == 0:
             print('setting logged in to False')
-            session['loggedin'] = "False"
-            #token = create_token(user_name, session['loggedin'])
-            
-            #return jsonify(token)
+            #session['loggedin'] = "False"
             print('about to return False')
-            s = str(session['loggedin'])
+            #s = str(session['loggedin'])
+            s = "False"
             t = '{' + f'"loggedin":"{str(s)}"' + '}'
-            #print(t)
-            # resp = make_response("usernotloggedin", 401)
             #used to reset connection after bad query transaction
             conn.rollback()
             return t    
@@ -298,11 +294,10 @@ def login():
         cur.execute(getId, [username, passwd])
         id = cur.fetchone()
 
-        #session['Authorization'] = token
         # sessions carry data over the website
-        session['loggedin'] = "True"
+        #session['loggedin'] = "True"
 
-        session['username'] = username
+        #session['username'] = username
 
         #need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple 
         #and needs to be removed
@@ -311,11 +306,8 @@ def login():
         #print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
 
-        #token = create_token(user_name, session['loggedin'])
-        #print("at the end")
-        # print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
-        s = str(session['loggedin'])
-        i = session['id']
+        # s = str(session['loggedin'])
+        s = "True"
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
         # resp = make_response("userloggedin", 200)
         # resp.set_cookie('userID', id, path='/')
