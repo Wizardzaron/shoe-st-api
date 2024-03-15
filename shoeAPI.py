@@ -303,9 +303,11 @@ def login():
 
         session['username'] = username
 
-        session['id'] = str(id)
+        #need to do id[0][0] because even though their is only one id number we are retrieving it's still wrapped in a tuple 
+        #and needs to be removed
+        session['id'] = str(id[0][0])
         
-        print("Id: ", id)
+        #print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
 
         #token = create_token(user_name, session['loggedin'])
