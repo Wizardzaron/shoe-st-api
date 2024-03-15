@@ -260,6 +260,7 @@ def login():
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         msg.headers['Access-Control-Allow-Origin'] = '*'
+        msg.headers['Access-Control-Allow-Credentials'] = True
 
         username = request.form.get('username')
         passwd = request.form.get('passwd')
@@ -342,7 +343,9 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
-         
+        #need to include CORS credentials in order to send session cookie to client
+        msg.headers['Access-Control-Allow-Credentials'] = True 
+        
         id = session['id']
         # id = int(id)
         #id = request.cookies.get('userID')
