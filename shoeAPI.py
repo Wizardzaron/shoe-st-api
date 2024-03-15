@@ -19,12 +19,6 @@ CORS(app, supports_credentials=True)
 app.config['SECRET_KEY'] = 'Sa_sa'
 app.permanent_session_lifetime = timedelta(minutes=30)
 
-DB_HOST = 'ep-dark-lake-a4cd73x9-pooler.us-east-1.aws.neon.tech'
-DB_PORT = '5432'
-DB_NAME = 'verceldb'
-DB_USER = 'default'
-DB_PASS = 'ugJZCc1av6ob'
-
 conn = None
 
 def connect_to_database():
@@ -32,11 +26,11 @@ def connect_to_database():
     global conn
 
     conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
+        host=os.environ.get('DB_HOST'),
+        port=os.environ.get('DB_PORT'),
+        dbname=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASS'),
         keepalives_idle=3000
     )
 
@@ -268,23 +262,19 @@ def login():
         #NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
         getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = %s AND passwd = %s'''
-        cur.execute(getCountByUsernameAndPassword, [username, passwd])
-
-    
-            
-            #print("Did execute")
-            
+        cur.execute(getCountByUsernameAndPassword, [username, passwd])  
+                     
         countOfUsernameAndPassword = cur.fetchone()
-
-            #print("Did fetchone")
 
         if countOfUsernameAndPassword[0] == 0:
             print('setting logged in to False')
-            #session['loggedin'] = "False"
+            session['loggedin'] = "False"
+
             print('about to return False')
-            #s = str(session['loggedin'])
-            s = "False"
+            s = str(session['loggedin'])
             t = '{' + f'"loggedin":"{str(s)}"' + '}'
+
+            # resp = make_response("usernotloggedin", 401)
             #used to reset connection after bad query transaction
             conn.rollback()
             return t    
@@ -295,9 +285,9 @@ def login():
         id = cur.fetchone()
 
         # sessions carry data over the website
-        #session['loggedin'] = "True"
+        session['loggedin'] = "True"
 
-        #session['username'] = username
+        session['username'] = username
 
         #need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple 
         #and needs to be removed
@@ -306,11 +296,9 @@ def login():
         #print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
 
-        # s = str(session['loggedin'])
-        s = "True"
+        s = str(session['loggedin'])
+        i = session['id']
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
-        # resp = make_response("userloggedin", 200)
-        # resp.set_cookie('userID', id, path='/')
         return t
         
 
@@ -338,7 +326,12 @@ def userdata_get():
         #need to include CORS credentials in order to send session cookie to client
         msg.headers['Access-Control-Allow-Credentials'] = True 
         
-        id = session['id']
+        id = session.get('id')
+
+        if id is None:
+            msg = ({"message": "User could not be found be found due to id returning none"})
+            return jsonify(msg)
+
         # id = int(id)
         #id = request.cookies.get('userID')
         print("id + ", id)
