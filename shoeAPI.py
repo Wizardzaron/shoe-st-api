@@ -341,7 +341,7 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Origin'] = '*'
          
         id = session.get('id')
-        id = int(id)
+        # id = int(id)
         #id = request.cookies.get('userID')
         print("id + ", id)
         getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
