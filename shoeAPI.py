@@ -304,15 +304,16 @@ def login():
         session['username'] = username
 
         session['id'] = str(id)
-            
-        print("session id does exist: ", session.get('id'))
+        
+        print("Id: ", id)
+        print("session id does exist in session: ", session.get('id'))
 
         #token = create_token(user_name, session['loggedin'])
         #print("at the end")
         # print(f'at the end -- printing jsonify|{session["loggedin"]}|and more to go')
         s = str(session['loggedin'])
         i = session['id']
-        t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' +'}'
+        t = '{' + f'"loggedin":"{str(s)}"' + '}'
         # resp = make_response("userloggedin", 200)
         # resp.set_cookie('userID', id, path='/')
         return t
