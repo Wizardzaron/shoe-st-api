@@ -340,7 +340,7 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
          
-        id = session.get('id')
+        id = session['id']
         # id = int(id)
         #id = request.cookies.get('userID')
         print("id + ", id)
