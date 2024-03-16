@@ -19,12 +19,6 @@ CORS(app, supports_credentials=True)
 app.config['SECRET_KEY'] = 'Sa_sa'
 app.permanent_session_lifetime = timedelta(minutes=30)
 
-DB_HOST = 'ep-dark-lake-a4cd73x9-pooler.us-east-1.aws.neon.tech'
-DB_PORT = '5432'
-DB_NAME = 'verceldb'
-DB_USER = 'default'
-DB_PASS = 'ugJZCc1av6ob'
-
 conn = None
 
 def connect_to_database():
@@ -32,11 +26,11 @@ def connect_to_database():
     global conn
 
     conn = psycopg2.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS,
+        host=os.environ.get('DB_HOST'),
+        port=os.environ.get('DB_PORT'),
+        dbname=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASS'),
         keepalives_idle=3000
     )
 
