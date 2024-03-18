@@ -299,6 +299,8 @@ def login():
         s = str(session['loggedin'])
         i = session['id']
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
+        print(session)
+        print(t)
         return t
         
 
