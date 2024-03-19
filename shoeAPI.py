@@ -34,6 +34,29 @@ def connect_to_database():
         keepalives_idle=3000
     )
 
+def session_expired():
+
+    if 'modified' in session:
+        # Get the last modification time of the session
+        last_modified = session['modified']
+
+        # Determine the current time
+        current_time = datetime.utcnow()
+
+        # Calculate the session timeout (e.g., 30 minutes)
+        session_timeout = timedelta(minutes=30)
+
+        # Calculate the expiration time based on the session timeout
+        expiration_time = last_modified + session_timeout
+
+        # Check if the current time is past the expiration time
+        if current_time > expiration_time:
+            return True  # Session has expired
+        else:
+            return False  # Session is still active
+    else:
+            return True  # Session doesn't exist or is invalid
+
 # DATABASE_URL = os.environ.get('DATABASE_URL')
 # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
 
@@ -326,10 +349,14 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
         #need to include CORS credentials in order to send session cookie to client
-        # msg.headers['Access-Control-Allow-Credentials'] = True 
+        msg.headers['Access-Control-Allow-Credentials'] = True 
+
+        if session_expired():
+            msg =  ({"message": "Session expired"})
+            return jsonify(msg)
 
         if "id" not in session:
-            msg = ({"message": "User could not be found be found due to id returning none"})
+            msg = ({"message": "User could not be found due to id returning none"})
             return jsonify(msg)
         
         id = session.get('id')
