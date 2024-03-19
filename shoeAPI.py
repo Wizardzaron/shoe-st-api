@@ -54,8 +54,7 @@ def session_expired():
             return True  # Session has expired
         else:
             return False  # Session is still active
-    else:
-            return True  # Session doesn't exist or is invalid
+
 
 # DATABASE_URL = os.environ.get('DATABASE_URL')
 # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
