@@ -17,6 +17,10 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.config['SECRET_KEY'] = 'Sa_sa'
+
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 conn = None
@@ -325,6 +329,7 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
+
         #need to include CORS credentials in order to send session cookie to client
         msg.headers['Access-Control-Allow-Credentials'] = True 
 
