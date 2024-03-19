@@ -326,7 +326,7 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
         #need to include CORS credentials in order to send session cookie to client
-        # msg.headers['Access-Control-Allow-Credentials'] = True 
+        msg.headers['Access-Control-Allow-Credentials'] = True 
 
         if "id" not in session:
             msg = ({"message": "User could not be found due to id returning none"})
