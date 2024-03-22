@@ -427,6 +427,30 @@ def order_post():
 
     return jsonify('order created successfully')
 
+@app.route('/setcookie', methods=['GET'])
+def setcookie():
+
+    resp = make_response("loggedin", 200)
+    #Cookies can only handle the conversion of strings into bytes
+    resp.set_cookie('loggedin', "False", path='/')
+
+    return resp
+
+@app.route('/getcookie', methods=['GET'])
+def getcookie():
+
+    try:
+        cookie = request.cookies.get('loggedin')
+        print(cookie)
+        if cookie is None:
+            resp = make_response("Cookie is none")
+            return resp
+        resp = make_response("The cookie is '{cookie}'".format(cookie=cookie), 200)
+        return resp
+    except Exception as e:
+        resp = make_response("The cookie was not set")
+        return  resp
+
 @app.route('/signup', methods=['POST'])
 def signup_post():
     global conn
