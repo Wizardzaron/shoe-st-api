@@ -18,6 +18,7 @@ CORS(app, supports_credentials=True)
 
 app.config['SECRET_KEY'] = 'Sa_sa'
 
+#need this for the server side so the cookies containing the id for sessions dont get blocked
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 
@@ -289,7 +290,7 @@ def login():
         id = cur.fetchone()
 
         resp = make_response("Log in will now change to true", 200)
-        resp.set_cookie('loggedin', "True", path="/")
+        resp.set_cookie('loggedin', "True", path="/", samesite='None', secure=True)
 
 
         # sessions carry data over the website
@@ -434,7 +435,7 @@ def setcookie():
 
     resp = make_response("loggedin", 200)
     #Cookies can only handle the conversion of strings into bytes
-    resp.set_cookie('loggedin', "False", path='/')
+    resp.set_cookie('loggedin', "False", path='/', samesite='None', secure=True)
 
     return resp
 
