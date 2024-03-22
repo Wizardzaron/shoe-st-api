@@ -278,7 +278,7 @@ def login():
             # s = str({cookie})
             # t = '{' + f'"loggedin":"{str(s)}"' + '}'
 
-            # resp = make_response("usernotloggedin", 401)
+            resp = make_response("usernotloggedin", 401)
             #used to reset connection after bad query transaction
             conn.rollback()
             return resp    
@@ -447,7 +447,7 @@ def getcookie():
         if cookie is None:
             resp = make_response("Cookie is none")
             return resp
-        resp = make_response("The cookie is '{cookie}'".format(cookie=cookie), 200)
+        #resp = make_response("The cookie is '{cookie}'".format(cookie=cookie), 200)
         return resp
     except Exception as e:
         resp = make_response("The cookie was not set")
