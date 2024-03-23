@@ -464,6 +464,10 @@ def logout():
 
     session.pop('loggedin', None)
 
+    t = '{' + f'"loggedin": "Null"' + '}'
+
+    return t
+
 @app.route('/signup', methods=['POST'])
 def signup_post():
     global conn
