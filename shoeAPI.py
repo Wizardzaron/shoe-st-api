@@ -459,6 +459,11 @@ def getlogin():
     print(t)
     return t  
 
+@app.route('/logout', methods=['GET'])
+def logout():
+
+    session.pop('loggedin', None)
+
 @app.route('/signup', methods=['POST'])
 def signup_post():
     global conn
