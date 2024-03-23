@@ -454,17 +454,26 @@ def order_post():
 @app.route('/getlogin', methods=['GET'])
 def getlogin():
 
-    s = str(session['loggedin'])
-    t = '{' + f'"loggedin":"{str(s)}"' + '}'
-    print(t)
-    return t  
+    if 'loggedin' in session:
+
+        s = str(session['loggedin'])
+        t = '{' + f'"loggedin":"{str(s)}"' + '}'
+        print(t)
+        return t  
+    else:
+        #used to create session loggedin just in case the cookie doesn't exist yet
+        session['loggedin'] = 'False'
+        s = str(session['loggedin'])
+        t = '{' + f'"loggedin":"{str(s)}"' + '}'
+        print(t)
+        return t   
 
 @app.route('/logout', methods=['GET'])
 def logout():
 
     session.pop('loggedin', None)
 
-    t = '{' + f'"loggedin": "Null"' + '}'
+    t = '{' + f'"loggedin": "False"' + '}'
 
     return t
 
