@@ -336,7 +336,7 @@ def userdata_get():
         if "id" not in session:
             msg = ({"message": "User could not be found due to id returning none"})
             return jsonify(msg)
-        
+
         id = session.get('id')
         # id = int(id)
         #id = request.cookies.get('userID')
@@ -450,6 +450,14 @@ def order_post():
 #     except Exception as e:
 #         resp = make_response("The cookie was not set")
 #         return  resp
+
+@app.route('/getlogin', methods=['GET'])
+def getlogin():
+
+    s = str(session['loggedin'])
+    t = '{' + f'"loggedin":"{str(s)}"' + '}'
+    print(t)
+    return t  
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
