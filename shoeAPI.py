@@ -273,27 +273,26 @@ def login():
 
         if countOfUsernameAndPassword[0] == 0:
             print('setting logged in to False')
-            # cookie = request.cookies.get('loggedin')
+            session['loggedin'] = 'False'
 
-            # print('about to return False')
-            # s = str({cookie})
-            # t = '{' + f'"loggedin":"{str(s)}"' + '}'
+            print('about to return False')
+            s = str(session['loggedin'])
+            t = '{' + f'"loggedin":"{str(s)}"' + '}'
 
-            resp = make_response("usernotloggedin", 401)
+            # resp = make_response("usernotloggedin", 401)
             #used to reset connection after bad query transaction
             conn.rollback()
-            return resp    
+            return t   
 
 
         getId = '''SELECT id FROM customer WHERE username = %s AND passwd = %s'''
         cur.execute(getId, [username, passwd])
         id = cur.fetchone()
 
-        resp = make_response("Log in will now change to true", 200)
-        resp.set_cookie('loggedin', "True", path="/", samesite='None', secure=True)
-
 
         # sessions carry data over the website
+        session['loggedin'] = 'True'
+
         session['username'] = username
 
         #need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple 
@@ -303,12 +302,11 @@ def login():
         #print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
 
-        # s = str(session['loggedin'])
-        # i = session['id']
-        # t = '{' + f'"loggedin":"{str(s)}"' + '}'
-        # print(session)
-        # print(t)
-        return resp
+        s = str(session['loggedin'])
+        t = '{' + f'"loggedin":"{str(s)}"' + '}'
+        print(session)
+        print(t)
+        return t
         
 
     except Exception as e:
@@ -316,7 +314,6 @@ def login():
         conn.rollback()
         return jsonify(msg)
 
-    #return resp
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
@@ -430,29 +427,29 @@ def order_post():
 
     return jsonify('order created successfully')
 
-@app.route('/setcookie', methods=['GET'])
-def setcookie():
+# @app.route('/setcookie', methods=['GET'])
+# def setcookie():
 
-    resp = make_response("loggedin", 200)
-    #Cookies can only handle the conversion of strings into bytes
-    resp.set_cookie('loggedin', "False", path='/', samesite='None', secure=True)
+#     resp = make_response("loggedin", 200)
+#     #Cookies can only handle the conversion of strings into bytes
+#     resp.set_cookie('loggedin', "False", path='/', samesite='None', secure=True)
 
-    return resp
+#     return resp
 
-@app.route('/getcookie', methods=['GET'])
-def getcookie():
+# @app.route('/getcookie', methods=['GET'])
+# def getcookie():
 
-    try:
-        cookie = request.cookies.get('loggedin')
-        print(cookie)
-        if cookie is None:
-            resp = make_response("Cookie is none")
-            return resp
-        #resp = make_response("The cookie is '{cookie}'".format(cookie=cookie), 200)
-        return resp
-    except Exception as e:
-        resp = make_response("The cookie was not set")
-        return  resp
+#     try:
+#         cookie = request.cookies.get('loggedin')
+#         print(cookie)
+#         if cookie is None:
+#             resp = make_response("Cookie is none")
+#             return resp
+#         #resp = make_response("The cookie is '{cookie}'".format(cookie=cookie), 200)
+#         return resp
+#     except Exception as e:
+#         resp = make_response("The cookie was not set")
+#         return  resp
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
