@@ -137,11 +137,11 @@ def shoeimages():
     rows = []
 
     try:
-        getImages = '''SELECT images, item_id, descript, names, brand FROM shoes'''
+        getImages = '''SELECT images, item_id, descript, names, brand, price FROM shoes'''
         cur.execute(getImages)
         info =cur.fetchall()
         print(info)
-        columns = ('images','item_id', 'descript', 'names', 'brand')
+        columns = ('images','item_id', 'descript', 'names', 'brand', 'price')
 
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
