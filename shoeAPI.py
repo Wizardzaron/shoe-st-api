@@ -462,6 +462,7 @@ def getlogin():
         return t  
     else:
         #used to create session loggedin just in case the cookie doesn't exist yet
+        print("Cookie doesn't exist yet")
         session['loggedin'] = 'False'
         s = str(session['loggedin'])
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
