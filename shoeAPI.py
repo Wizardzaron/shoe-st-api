@@ -454,6 +454,9 @@ def order_post():
 @app.route('/getlogin', methods=['GET'])
 def getlogin():
 
+    msg = jsonify('Trying to retrieve session')
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+
     if 'loggedin' in session:
 
         s = str(session['loggedin'])
@@ -462,7 +465,7 @@ def getlogin():
         return t  
     else:
         #used to create session loggedin just in case the cookie doesn't exist yet
-        print("Cookie doesn't exist yet")
+        print("Session doesn't exist yet")
         session['loggedin'] = 'False'
         s = str(session['loggedin'])
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
