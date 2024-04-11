@@ -125,8 +125,48 @@ def check_connection():
 
 #     return jsonify('shoe created successfully')
 
+@app.route('/shoeimages', methods=['GET'])
+def shoeimages_get():
+
+    global conn
+    if not conn or conn.closed:
+        connect_to_database()
+        if conn.closed:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+    rows = []    
+
+
+    try:
+
+        getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
+        cur.execute(getImage)
+        images = cur.fetchall()
+        print(images)
+        columns = ('shoe_id', 'image_id', 'image_url')
+        
+        msg = jsonify('Query inserted successfully')
+        msg.headers['Access-Control-Allow-Methods'] = 'GET'
+        msg.headers['Access-Control-Allow-Credentials'] = 'true'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+
+        # creating dictionary
+        for row in images:
+            print(f"trying to serve {row}", file=sys.stderr)
+            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
+            print(f"trying to serve {rows[-1]}", file=sys.stderr)
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
+        #used to reset connection after bad query transaction
+        #conn.rollback()
+        return jsonify(msg)
+    
+    return rows
+
 @app.route('/allshoedata', methods=['GET'])
-def shoeimages():
+def allshoedata_get():
     global conn
     if not conn or conn.closed:
         connect_to_database()
@@ -159,32 +199,7 @@ def shoeimages():
         #used to reset connection after bad query transaction
         #conn.rollback()
         return jsonify(msg)
-
-    try:
-
-        getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
-        cur.execute(getImage)
-        images = cur.fetchall()
-        print(images)
-        columns = ('shoe_id', 'image_id', 'image_url')
-        
-        msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
-
-        # creating dictionary
-        for row in images:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
-
-    except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
-        #used to reset connection after bad query transaction
-        #conn.rollback()
-        return jsonify(msg)
-    
+ 
     return rows
 
 @app.route('/shoedata', methods=['GET'])
