@@ -125,7 +125,7 @@ def check_connection():
 
 #     return jsonify('shoe created successfully')
 
-@app.route('/shoeimages', methods=['GET'])
+@app.route('/allshoedata', methods=['GET'])
 def shoeimages():
     global conn
     if not conn or conn.closed:
@@ -137,11 +137,11 @@ def shoeimages():
     rows = []
 
     try:
-        getImages = '''SELECT id, in_stock, color, sex, price, sizes, descript FROM shoe'''
-        cur.execute(getImages)
-        info =cur.fetchall()
+        getData = '''SELECT id, in_stock, color, sex, price, sizes, descript, name FROM shoe'''
+        cur.execute(getData)
+        info = cur.fetchall()
         print(info)
-        columns = ('id','in_stock', 'color', 'sex', 'price', 'sizes', 'descript')
+        columns = ('id','in_stock', 'color', 'sex', 'price', 'sizes', 'descript', 'name')
 
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
@@ -155,11 +155,36 @@ def shoeimages():
             print(f"trying to serve {rows[-1]}", file=sys.stderr)
 
     except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getImages, str(e))
+        msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
         #used to reset connection after bad query transaction
         #conn.rollback()
         return jsonify(msg)
 
+    try:
+
+        getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
+        cur.execute(getImage)
+        images = cur.fetchall()
+        print(images)
+        columns = ('shoe_id', 'image_id', 'image_url')
+        
+        msg = jsonify('Query inserted successfully')
+        msg.headers['Access-Control-Allow-Methods'] = 'GET'
+        msg.headers['Access-Control-Allow-Credentials'] = 'true'
+        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+
+        # creating dictionary
+        for row in images:
+            print(f"trying to serve {row}", file=sys.stderr)
+            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
+            print(f"trying to serve {rows[-1]}", file=sys.stderr)
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
+        #used to reset connection after bad query transaction
+        #conn.rollback()
+        return jsonify(msg)
+    
     return rows
 
 @app.route('/shoedata', methods=['GET'])
