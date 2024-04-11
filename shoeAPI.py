@@ -55,75 +55,75 @@ def check_connection():
         return jsonify({"message": "Connection is established"}), 200
 
 
-@app.route('/updateshoe', methods=['PATCH'])
-def shoedata_update():
-    global conn
-    #These 4 lines of code will ensure that the connection is always established, even if it's lost
-    if not conn or conn.closed:
-        connect_to_database()
-        if conn.closed:
-            return jsonify({"message": "No connection"}), 503
+# @app.route('/updateshoe', methods=['PATCH'])
+# def shoedata_update():
+#     global conn
+#     #These 4 lines of code will ensure that the connection is always established, even if it's lost
+#     if not conn or conn.closed:
+#         connect_to_database()
+#         if conn.closed:
+#             return jsonify({"message": "No connection"}), 503
 
-    cur = conn.cursor()
+#     cur = conn.cursor()
     
-    itemid = request.form.get('itemid')
-    images = request.form.get('images')
+#     itemid = request.form.get('itemid')
+#     images = request.form.get('images')
 
-    try:
-        updateOldShoe = """UPDATE shoes SET images = %s WHERE item_id = %s"""
-        cur.execute(updateOldShoe, [itemid, images])
-        conn.commit()
+#     try:
+#         updateOldShoe = """UPDATE shoes SET images = %s WHERE item_id = %s"""
+#         cur.execute(updateOldShoe, [itemid, images])
+#         conn.commit()
 
-    except Exception as err:
+#     except Exception as err:
             
-        msg = 'Query Failed: %s\nError: %s' % (updateOldShoe, str(err))
-        #used to reset connection after bad query transaction
-        conn.rollback()
-        return jsonify ( msg)
+#         msg = 'Query Failed: %s\nError: %s' % (updateOldShoe, str(err))
+#         #used to reset connection after bad query transaction
+#         conn.rollback()
+#         return jsonify ( msg)
             
-    finally:
-        cur.close()
+#     finally:
+#         cur.close()
 
-    return jsonify('shoe updated successfully')
+#     return jsonify('shoe updated successfully')
 
-@app.route('/addshoe', methods=['POST'])
-def shoedata_post():
-    global conn
-    if not conn or conn.closed:
-        connect_to_database()
-        if conn.closed:
-            return jsonify({"message": "No connection"}), 503
+# @app.route('/addshoe', methods=['POST'])
+# def shoedata_post():
+#     global conn
+#     if not conn or conn.closed:
+#         connect_to_database()
+#         if conn.closed:
+#             return jsonify({"message": "No connection"}), 503
     
-    cur = conn.cursor()
+#     cur = conn.cursor()
 
-    itemid = request.form.get('itemid')
-    category = request.form.get('category')
-    brand = request.form.get('brand')
-    color = request.form.get('color')
-    gender = request.form.get('gender')
-    shoesize = request.form.get('shoesize')
-    images = request.form.get('images')
-    descript = request.form.get('descript')
-    price = request.form.get('price')
-    names = request.form.get('names')
+#     itemid = request.form.get('itemid')
+#     category = request.form.get('category')
+#     brand = request.form.get('brand')
+#     color = request.form.get('color')
+#     gender = request.form.get('gender')
+#     shoesize = request.form.get('shoesize')
+#     images = request.form.get('images')
+#     descript = request.form.get('descript')
+#     price = request.form.get('price')
+#     names = request.form.get('names')
 
-    try:
+#     try:
 
-        insertNewShoe = """INSERT INTO shoes (names, item_id, category, brand, color, gender, shoesize, price ,images, descript) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-        cur.execute(insertNewShoe, [names, itemid, category, brand, color, gender, shoesize, price ,images, descript])
-        conn.commit()
+#         insertNewShoe = """INSERT INTO shoes (names, item_id, category, brand, color, gender, shoesize, price ,images, descript) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+#         cur.execute(insertNewShoe, [names, itemid, category, brand, color, gender, shoesize, price ,images, descript])
+#         conn.commit()
 
-    except Exception as err:
+#     except Exception as err:
         
-        msg = 'Query Failed: %s\nError: %s' % (insertNewShoe, str(err))
-        #used to reset connection after bad query transaction
-        conn.rollback()
-        return jsonify ( msg)
+#         msg = 'Query Failed: %s\nError: %s' % (insertNewShoe, str(err))
+#         #used to reset connection after bad query transaction
+#         conn.rollback()
+#         return jsonify ( msg)
         
-    finally:
-        cur.close()
+#     finally:
+#         cur.close()
 
-    return jsonify('shoe created successfully')
+#     return jsonify('shoe created successfully')
 
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages():
@@ -137,11 +137,11 @@ def shoeimages():
     rows = []
 
     try:
-        getImages = '''SELECT images, item_id, descript, names, brand, price FROM shoes'''
+        getImages = '''SELECT id, in_stock, color, sex, price, sizes, descript FROM shoe'''
         cur.execute(getImages)
         info =cur.fetchall()
         print(info)
-        columns = ('images','item_id', 'descript', 'names', 'brand', 'price')
+        columns = ('id','in_stock', 'color', 'sex', 'price', 'sizes', 'descript')
 
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
@@ -475,10 +475,15 @@ def getlogin():
 @app.route('/logout', methods=['GET'])
 def logout():
 
-    session.pop('loggedin', None)
+    msg = jsonify('Query inserted successfully')
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
 
-    t = '{' + f'"loggedin": "False"' + '}'
+    if 'loggedin' in session:
 
+        session.pop('loggedin', None)
+        t = '{' + f'"Signout": "Successful"' + '}'
+    else:
+        t = '{' + f'"Signout": "Failure"' + '}'
     return t
 
 @app.route('/signup', methods=['POST'])
