@@ -207,7 +207,7 @@ def mainimages_get():
     msg = make_response(jsonify(rows))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = '*'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
     return msg
 
