@@ -264,7 +264,7 @@ def shoedata_get():
         #itemId = 'FB7582-001'
         print(id)
         getInfo =  '''
-        SELECT sd.in_stock, sd.color, sd.sex, sd.price, sd.sizes, sd.descript, sd.name , i.shoe_id, i.image_id, i.image_url
+        SELECT sd.in_stock, sd.color, sd.sex, sd.price, sd.sizes, sd.descript, sd.name , i.shoe_id, i.image_id, i.image_url, i.main_image
         FROM shoe AS sd, image AS i
         WHERE id = %s AND i.shoe_id = %s'''
 
@@ -272,7 +272,7 @@ def shoedata_get():
         cur.execute(getInfo, [id,id])
         info = cur.fetchall()
         print(info)
-        columns = ('in_stock', 'color', 'sex', 'price', 'sizes', 'descript','name' ,'shoe_id', 'image_id', 'image_url')
+        columns = ('in_stock', 'color', 'sex', 'price', 'sizes', 'descript','name' ,'shoe_id', 'image_id', 'image_url', 'main_image')
 
 
 
