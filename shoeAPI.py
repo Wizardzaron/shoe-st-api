@@ -260,19 +260,21 @@ def shoedata_get():
     rows = []
     try:
         
-        itemId = request.args.get('item_id')
+        id = request.args.get('id')
         #itemId = 'FB7582-001'
-        print(itemId)
-        getInfo =  '''SELECT names, category, brand, color, gender, shoesize, price ,images, descript FROM shoes WHERE item_id = %s '''
-        cur.execute(getInfo, [itemId])
+        print(id)
+        getInfo =  '''
+        SELECT sd.in_stock, sd.color, sd.sex, sd.price, sd.sizes, sd.descript, sd.name , i.shoe_id, i.image_id, i.image_url
+        FROM shoe AS sd, image AS i
+        WHERE id = %s AND i.shoe_id = %s'''
+
+
+        cur.execute(getInfo, [id,id])
         info = cur.fetchall()
+        print(info)
+        columns = ('in_stock', 'color', 'sex', 'price', 'sizes', 'descript','name' ,'shoe_id', 'image_id', 'image_url')
 
-        columns = ('names', 'category', 'brand', 'color', 'gender', 'shoesize','price' ,'images', 'descript')
 
-        msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
 
         # creating dictionary
         for row in info:
@@ -283,6 +285,11 @@ def shoedata_get():
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
+
+    msg = make_response(jsonify(rows))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
     return rows
 
