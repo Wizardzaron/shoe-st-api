@@ -186,9 +186,9 @@ def mainimages_get():
         print(images)
         columns = ('shoe_id', 'image_id', 'image_url')
         
-        msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        # msg.headers['Access-Control-Allow-Methods'] = 'GET'
+        # msg.headers['Access-Control-Allow-Credentials'] = 'true'
+        # msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
 
         # creating dictionary
         for row in images:
@@ -204,7 +204,12 @@ def mainimages_get():
         #conn.rollback()
         return jsonify(msg)
     
-    return rows
+    msg = Flask.Response(rows)
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+
+    return msg
 
 
 @app.route('/allshoedata', methods=['GET'])
