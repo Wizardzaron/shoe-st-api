@@ -184,7 +184,7 @@ def mainimages_get():
         cur.execute(getImage)
         images = cur.fetchall()
         print(images)
-        columns = ('shoe_id', 'image_id', 'image_url')
+        # columns = ('shoe_id', 'image_id', 'image_url')
         
         # msg.headers['Access-Control-Allow-Methods'] = 'GET'
         # msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -195,7 +195,7 @@ def mainimages_get():
             # print(f"trying to serve {row}", file=sys.stderr)
             # rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
             # print(f"trying to serve {rows[-1]}", file=sys.stderr)
-            rows.append({"shoe_id": rows[0], "image_id": rows[1], "image_url": rows[2]})
+            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2]})
 
 
     except Exception as e:
