@@ -17,7 +17,6 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.config['SECRET_KEY'] = 'Sa_sa'
-
 #need this for the server side so the cookies containing the id for sessions dont get blocked
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -180,6 +179,7 @@ def mainimages_get():
 
     try:
 
+        #this a join
         getImage = '''
         SELECT i.shoe_id, i.image_id, i.image_url, sd.name, sd.descript 
         FROM image AS i, shoe AS sd 

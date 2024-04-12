@@ -1,2 +1,4 @@
 /.venv
 .vercel
+.env
+config.py
