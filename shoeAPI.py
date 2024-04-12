@@ -1,6 +1,6 @@
 import psycopg2
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response ,current_app,jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response ,current_app,jsonify
 from datetime import date, datetime, timedelta
 from flask import send_from_directory
 from functools import wraps
@@ -207,7 +207,7 @@ def mainimages_get():
     msg = make_response(jsonify(rows))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+    msg.headers['Access-Control-Allow-Origin'] = '*'
 
     return msg
 
