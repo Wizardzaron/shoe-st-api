@@ -180,22 +180,22 @@ def mainimages_get():
 
     try:
 
-        getImage = '''SELECT shoe_id, image_id, image_url FROM image WHERE main_image = true'''
+        getImage = '''
+        SELECT i.shoe_id, i.image_id, i.image_url, sd.name, sd.descript 
+        FROM image AS i, shoe AS sd 
+        WHERE main_image = true AND i.shoe_id = sd.id'''
+        
         cur.execute(getImage)
         images = cur.fetchall()
         print(images)
-        # columns = ('shoe_id', 'image_id', 'image_url')
-        
-        # msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        # msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        # msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+
 
         # creating dictionary
         for row in images:
             # print(f"trying to serve {row}", file=sys.stderr)
             # rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
             # print(f"trying to serve {rows[-1]}", file=sys.stderr)
-            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2]})
+            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2], "name": row[3], "descript": row[4]})
 
 
     except Exception as e:
