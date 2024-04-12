@@ -165,7 +165,7 @@ def shoeimages_get():
     
     return rows
 
-@app.route('allmainimages', methods=['GET'])
+@app.route('/allmainimages', methods=['GET'])
 def mainimages_get():
 
     global conn
