@@ -1,6 +1,7 @@
 import psycopg2
+import sqlite3
 import os
-from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response ,current_app,jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response, current_app, jsonify
 from datetime import date, datetime, timedelta
 from flask import send_from_directory
 from functools import wraps
@@ -13,11 +14,11 @@ import logging
 
 app = Flask(__name__)
 
-#supports_credentials allows us to use  include the Access-Control-Allow-Credentials header in the response. thus letting us to send cookies(thus allowing us to properly use sessions) or http authentication
+# supports_credentials allows us to use  include the Access-Control-Allow-Credentials header in the response. thus letting us to send cookies(thus allowing us to properly use sessions) or http authentication
 CORS(app, supports_credentials=True)
 
 app.config['SECRET_KEY'] = 'Sa_sa'
-#need this for the server side so the cookies containing the id for sessions dont get blocked
+# need this for the server side so the cookies containing the id for sessions dont get blocked
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True
 
@@ -25,29 +26,57 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 conn = None
 
+
 def connect_to_database():
 
     global conn
 
-    conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST'),
-        port=os.environ.get('DB_PORT'),
-        dbname=os.environ.get('DB_NAME'),
-        user=os.environ.get('DB_USER'),
-        password=os.environ.get('DB_PASS'),
-        keepalives_idle=3000
-    )
+    # conn = psycopg2.connect(
+    #     host=os.environ.get('DB_HOST'),
+    #     port=os.environ.get('DB_PORT'),
+    #     dbname=os.environ.get('DB_NAME'),
+    #     user=os.environ.get('DB_USER'),
+    #     password=os.environ.get('DB_PASS'),
+    #     keepalives_idle=3000
+    # )
+    conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
-# DATABASE_URL = os.environ.get('DATABASE_URL')
-# conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+def fetchObjectFromCursorAll(cursor):
+            
+    tuple = cursor.fetchall()
+    print(tuple)
+    # print("description",cursor.description)
+    print(len(tuple))
+
+    obj = dict()
+    for i in range(len(tuple)):
+        for element in tuple[i]:
+            # print(f"The element at index {element} is {tuple[i][element]}")
+            obj[cursor.description[element][0]] = tuple[element]
+
+    return obj
+
+
+def fetchObjectFromCursor(cursor):
+            
+    tuple = cursor.fetchone()
+    print(tuple)
+    # print("description",cursor.description)
+
+    obj = dict()
+    for i in range(len(tuple)):
+        print(f"The element at index {i} is {tuple[i]}")
+        obj[cursor.description[i][0]] = tuple[i]
+
+    return obj
 
 @app.route('/connect', methods=['GET'])
 def check_connection():
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
     connection = conn.closed
-    if(connection != 0):
+    if (connection != 0):
         return jsonify({"message": "No connection"}), 503
 
     else:
@@ -64,7 +93,7 @@ def check_connection():
 #             return jsonify({"message": "No connection"}), 503
 
 #     cur = conn.cursor()
-    
+
 #     itemid = request.form.get('itemid')
 #     images = request.form.get('images')
 
@@ -74,12 +103,12 @@ def check_connection():
 #         conn.commit()
 
 #     except Exception as err:
-            
+
 #         msg = 'Query Failed: %s\nError: %s' % (updateOldShoe, str(err))
 #         #used to reset connection after bad query transaction
 #         conn.rollback()
 #         return jsonify ( msg)
-            
+
 #     finally:
 #         cur.close()
 
@@ -92,7 +121,7 @@ def check_connection():
 #         connect_to_database()
 #         if conn.closed:
 #             return jsonify({"message": "No connection"}), 503
-    
+
 #     cur = conn.cursor()
 
 #     itemid = request.form.get('itemid')
@@ -113,29 +142,66 @@ def check_connection():
 #         conn.commit()
 
 #     except Exception as err:
-        
+
 #         msg = 'Query Failed: %s\nError: %s' % (insertNewShoe, str(err))
 #         #used to reset connection after bad query transaction
 #         conn.rollback()
 #         return jsonify ( msg)
-        
+
 #     finally:
 #         cur.close()
 
 #     return jsonify('shoe created successfully')
 
-@app.route('/shoeimages', methods=['GET'])
-def shoeimages_get():
+@app.route('/brandimages', methods=['GET'])
+def brandimages_get():
 
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []    
+    rows = []
+    brand_id = request.args.get('brand_id')
 
+    try:
+
+        getBrand = '''SELECT DISTINCT i.image_url FROM image as i, shoe as sd WHERE i.main_image = 1 AND sd.brand_id = ?'''
+        cur.execute(getBrand,[brand_id])
+        brand = cur.fetchall()
+        print(brand)
+        
+        for row in brand:
+            rows.append({"image_url": row[0]})
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getBrand, str(e))
+        # used to reset connection after bad query transaction
+        # conn.rollback()
+        return jsonify(msg)
+
+    msg = make_response(jsonify(rows))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    return msg
+
+
+@app.route('/shoeimages', methods=['GET'])
+def shoeimages_get():
+
+    # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+    rows = []
 
     try:
 
@@ -144,7 +210,7 @@ def shoeimages_get():
         images = cur.fetchall()
         print(images)
         columns = ('shoe_id', 'image_id', 'image_url')
-        
+
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -158,52 +224,151 @@ def shoeimages_get():
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
-        #used to reset connection after bad query transaction
-        #conn.rollback()
+        # used to reset connection after bad query transaction
+        # conn.rollback()
         return jsonify(msg)
-    
+
     return rows
+
 
 @app.route('/allmainimages', methods=['GET'])
 def mainimages_get():
 
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []    
-
+    rows = []
 
     try:
 
-        #this a join
+        # this a join
         getImage = '''
-        SELECT i.shoe_id, i.image_id, i.image_url, sd.name, sd.descript 
-        FROM image AS i, shoe AS sd 
-        WHERE main_image = true AND i.shoe_id = sd.id'''
-        
+        SELECT i.shoe_id, i.image_id, i.image_url, sd.shoe_name, sd.descript, bd.brand_name , bd.brand_id
+        FROM image AS i, shoe AS sd, brand AS bd 
+        WHERE i.main_image = 1 AND i.shoe_id = sd.id AND sd.brand_id = bd.brand_id'''
+
         cur.execute(getImage)
         images = cur.fetchall()
         print(images)
-
 
         # creating dictionary
         for row in images:
             # print(f"trying to serve {row}", file=sys.stderr)
             # rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
             # print(f"trying to serve {rows[-1]}", file=sys.stderr)
-            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2], "name": row[3], "descript": row[4]})
-
+            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2],
+                        "shoe_name": row[3], "descript": row[4], "brand_name": row[5], "brand_id": row[6]})
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
-        #used to reset connection after bad query transaction
-        #conn.rollback()
+        # used to reset connection after bad query transaction
+        # conn.rollback()
         return jsonify(msg)
-    
+
+    msg = make_response(jsonify(rows))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    return msg
+
+
+@app.route('/differentshoecolors', methods=['GET'])
+def differentshoecolors_get():
+
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    cur = conn.cursor()
+    rows = []
+    try:
+
+        shoe_id = request.args.get('id')
+        print(shoe_id)
+        getInfo = '''SELECT 
+        i.image_id,
+        i.image_url,
+        b.brand_name,
+        i.shoe_id, 
+        sd.shoe_name
+        FROM 
+                shoe AS sd, 
+                image AS i, 
+                brand AS b
+        WHERE 
+                sd.id = ? AND 
+                sd.id = i.shoe_id AND 
+                i.main_image = true AND 
+                b.brand_id = sd.brand_id'''
+
+        cur.execute(getInfo, [shoe_id])
+
+        # creating dictionary
+
+        # def result_rows(cursor):
+        #     columns = [desc[0] for desc in cursor.description]
+        #     rows = []
+        #     for row in cursor.fetchall():
+        #         summary = dict(zip(columns, row))
+        #         rows.append(summary)
+        #     return rows
+
+        columns = [desc[0] for desc in cur.description]
+        rows = []
+        for row in cur.fetchall():
+            summary = dict(zip(columns, row))
+            rows.append(summary)
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
+        return jsonify(msg)
+
+    msg = make_response(jsonify(rows))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    return rows
+
+
+@app.route('/shoesizes', methods=['GET'])
+def allshoesizes_get():
+
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+    rows = []
+
+    try:
+        id = request.args.get('id')
+        getSizes = '''SELECT size, in_stock FROM sizes WHERE shoe_id = ?'''
+        cur.execute(getSizes, [id])
+        info = cur.fetchall()
+        print(info)
+        columns = ('size', 'in_stock')
+
+        # creating dictionary
+        for row in info:
+            print(f"trying to serve {row}", file=sys.stderr)
+            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
+            print(f"trying to serve {rows[-1]}", file=sys.stderr)
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getSizes, str(e))
+        # used to reset connection after bad query transaction
+        # conn.rollback()
+        return jsonify(msg)
+
     msg = make_response(jsonify(rows))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -215,25 +380,23 @@ def mainimages_get():
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
     rows = []
 
     try:
-        getData = '''SELECT id, in_stock, color, sex, price, sizes, descript, name FROM shoe'''
+
+        getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name
+        FROM shoe AS sd, brand AS b'''
         cur.execute(getData)
         info = cur.fetchall()
         print(info)
-        columns = ('id','in_stock', 'color', 'sex', 'price', 'sizes', 'descript', 'name')
-
-        msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        columns = ('id', 'color', 'sex', 'price', 'descript',
+                   'shoe_name', 'brand_id', 'brand_name')
 
         # creating dictionary
         for row in info:
@@ -243,47 +406,8 @@ def allshoedata_get():
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
-        #used to reset connection after bad query transaction
-        #conn.rollback()
-        return jsonify(msg)
- 
-    return rows
-
-@app.route('/shoedata', methods=['GET'])
-def shoedata_get():
-    global conn
-    if not conn or conn.closed:
-        connect_to_database()
-        if conn.closed:
-            return jsonify({"message": "No connection"}), 503
-    cur = conn.cursor()
-    rows = []
-    try:
-        
-        id = request.args.get('id')
-        #itemId = 'FB7582-001'
-        print(id)
-        getInfo =  '''
-        SELECT sd.in_stock, sd.color, sd.sex, sd.price, sd.sizes, sd.descript, sd.name , i.shoe_id, i.image_id, i.image_url, i.main_image
-        FROM shoe AS sd, image AS i
-        WHERE id = %s AND i.shoe_id = %s'''
-
-
-        cur.execute(getInfo, [id,id])
-        info = cur.fetchall()
-        print(info)
-        columns = ('in_stock', 'color', 'sex', 'price', 'sizes', 'descript','name' ,'shoe_id', 'image_id', 'image_url', 'main_image')
-
-
-
-        # creating dictionary
-        for row in info:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
-
-    except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
+        # used to reset connection after bad query transaction
+        # conn.rollback()
         return jsonify(msg)
 
     msg = make_response(jsonify(rows))
@@ -292,6 +416,46 @@ def shoedata_get():
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
     return rows
+
+
+@app.route('/shoedata', methods=['GET'])
+def shoedata_get():
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    cur = conn.cursor()
+    try:
+
+        shoe_id = request.args.get('id')
+        print(shoe_id)
+        # getInfo = '''
+        # SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , i.shoe_id, i.image_id, i.image_url, i.main_image, b.brand_name
+        # FROM shoe AS sd, image AS i, brand AS b
+        # WHERE sd.id = ? AND sd.id = i.shoe_id AND b.brand_id = sd.brand_id'''
+
+        # cur.execute(getInfo,[shoe_id,])
+        # shoeObj = fetchObjectFromCursor(cur)
+
+        getSizes = '''SELECT size, in_stock FROM sizes WHERE shoe_id = ?'''
+
+        cur.execute(getSizes,[shoe_id,])
+        shoeObj = fetchObjectFromCursorAll(cur)
+
+        print(shoeObj)
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (getSizes, str(e))
+        return jsonify(msg)
+
+    msg = make_response(jsonify(shoeObj))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    return msg
+
 
 @app.route('/shoebrand', methods=['GET'])
 def shoebrand_get():
@@ -303,15 +467,15 @@ def shoebrand_get():
     cur = conn.cursor()
     rows = []
     try:
-        
+
         brand = request.args.get('brand')
-        #itemId = 'FB7582-001'
-        #print(itemId)
-        getInfo =  '''SELECT names, item_id, price ,images FROM shoes WHERE brand = %s '''
+        # itemId = 'FB7582-001'
+        # print(itemId)
+        getInfo = '''SELECT names, item_id, price ,images FROM shoes WHERE brand = %s '''
         cur.execute(getInfo, [brand])
         info = cur.fetchall()
 
-        columns = ('names', 'item_id', 'price' ,'images')
+        columns = ('names', 'item_id', 'price', 'images')
 
         # creating dictionary
         for row in info:
@@ -322,7 +486,6 @@ def shoebrand_get():
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
-
 
     return rows
 
@@ -336,7 +499,6 @@ def shoebrand_get():
 #         searching = request.args.get('searchValue')
 
 
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     global conn
@@ -345,9 +507,8 @@ def login():
         if conn.closed:
             return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
-    
-    try:
 
+    try:
 
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
@@ -358,11 +519,11 @@ def login():
         username = request.form.get('username')
         passwd = request.form.get('passwd')
 
-        #NOTE in sqlite and postgresql you use %s as placeholders instead of ?
+        # NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
         getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = %s AND passwd = %s'''
-        cur.execute(getCountByUsernameAndPassword, [username, passwd])  
-                     
+        cur.execute(getCountByUsernameAndPassword, [username, passwd])
+
         countOfUsernameAndPassword = cur.fetchone()
 
         if countOfUsernameAndPassword[0] == 0:
@@ -374,26 +535,24 @@ def login():
             t = '{' + f'"loggedin":"{str(s)}"' + '}'
 
             # resp = make_response("usernotloggedin", 401)
-            #used to reset connection after bad query transaction
+            # used to reset connection after bad query transaction
             conn.rollback()
-            return t   
-
+            return t
 
         getId = '''SELECT id FROM customer WHERE username = %s AND passwd = %s'''
         cur.execute(getId, [username, passwd])
         id = cur.fetchone()
-
 
         # sessions carry data over the website
         session['loggedin'] = 'True'
 
         session['username'] = username
 
-        #need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple 
-        #and needs to be removed
+        # need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple
+        # and needs to be removed
         session['id'] = str(id[0])
-        
-        #print("Id: ", id)
+
+        # print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
 
         s = str(session['loggedin'])
@@ -401,7 +560,6 @@ def login():
         print(session)
         print(t)
         return t
-        
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getId, str(e))
@@ -424,8 +582,8 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
 
-        #need to include CORS credentials in order to send session cookie to client
-        msg.headers['Access-Control-Allow-Credentials'] = True 
+        # need to include CORS credentials in order to send session cookie to client
+        msg.headers['Access-Control-Allow-Credentials'] = True
 
         if "id" not in session:
             msg = ({"message": "User could not be found due to id returning none"})
@@ -433,14 +591,15 @@ def userdata_get():
 
         id = session.get('id')
         # id = int(id)
-        #id = request.cookies.get('userID')
+        # id = request.cookies.get('userID')
         print("id + ", id)
-        getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
+        getInfo = '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode FROM customer WHERE id = %s'''
 
-        cur.execute(getInfo,(id, ))
+        cur.execute(getInfo, (id, ))
         userInfo = cur.fetchall()
 
-        columns = ('firstname', 'lastname', 'username', 'passwd', 'email', 'streetaddress', 'zipcode')
+        columns = ('firstname', 'lastname', 'username',
+                   'passwd', 'email', 'streetaddress', 'zipcode')
 
         # creating dictionary
         for row in userInfo:
@@ -454,6 +613,7 @@ def userdata_get():
 
     return rows
 
+
 @app.route('/alluserdata', methods=['GET'])
 def all_userdata_get():
     global conn
@@ -465,12 +625,13 @@ def all_userdata_get():
 
     rows = []
     try:
-        #getInfo =  '''SELECT * FROM customer'''
-        getInfo =  '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode, id, mtd, ytd FROM customer'''
+        # getInfo =  '''SELECT * FROM customer'''
+        getInfo = '''SELECT firstname, lastname, username, passwd, email, streetaddress, zipcode, id, mtd, ytd FROM customer'''
         cur.execute(getInfo)
         info = cur.fetchall()
 
-        columns = ('firstname', 'lastname', 'username', 'passwd', 'email', 'streetaddress', 'zipcode', 'id', 'mtd', 'ytd')
+        columns = ('firstname', 'lastname', 'username', 'passwd',
+                   'email', 'streetaddress', 'zipcode', 'id', 'mtd', 'ytd')
 
         # creating dictionary
         for row in info:
@@ -483,6 +644,7 @@ def all_userdata_get():
         return jsonify(msg)
 
     return rows
+
 
 @app.route('/ordercreate', methods=['POST'])
 def order_post():
@@ -504,18 +666,19 @@ def order_post():
     try:
 
         insertNewUser = """INSERT INTO orders (brand, customer_id, dateoforder, itemname, price, quantity) VALUES (%s,%s,%s,%s,%s,%s)"""
-        cur.execute(insertNewUser, [brand, customer_id, dateoforder, itemname, price, quantity])
+        cur.execute(insertNewUser, [brand, customer_id,
+                    dateoforder, itemname, price, quantity])
         conn.commit()
 
     except Exception as err:
-        
-        #return render_template('welcome.html', msg = str(err))
+
+        # return render_template('welcome.html', msg = str(err))
 
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
         conn.rollback()
-        return jsonify ( msg)
-        #print('Query Failed: %s\nError: %s' % (insertNewUser, str(err)))
-        
+        return jsonify(msg)
+        # print('Query Failed: %s\nError: %s' % (insertNewUser, str(err)))
+
     finally:
         cur.close()
 
@@ -545,6 +708,7 @@ def order_post():
 #         resp = make_response("The cookie was not set")
 #         return  resp
 
+
 @app.route('/getlogin', methods=['GET'])
 def getlogin():
 
@@ -556,15 +720,16 @@ def getlogin():
         s = str(session['loggedin'])
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
         print(t)
-        return t  
+        return t
     else:
-        #used to create session loggedin just in case the cookie doesn't exist yet
+        # used to create session loggedin just in case the cookie doesn't exist yet
         print("Session doesn't exist yet")
         session['loggedin'] = 'False'
         s = str(session['loggedin'])
         t = '{' + f'"loggedin":"{str(s)}"' + '}'
         print(t)
-        return t   
+        return t
+
 
 @app.route('/logout', methods=['GET'])
 def logout():
@@ -579,6 +744,7 @@ def logout():
     else:
         t = '{' + f'"Signout": "Failure"' + '}'
     return t
+
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
@@ -599,49 +765,49 @@ def signup_post():
     streetaddress = data.get('streetaddress')
     passwd = data.get('passwd')
 
-	#password must be between 4 and 255
+    # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
-        return jsonify ("password must be between 4 and 255")    
-    
-    #username must be between 4 and 255 
-    if len(username) < 4 or len(username) > 255:
-         return jsonify ("Username needs to be between 4 and 255 characters long.")
-    
-    #check if email is valid
+        return jsonify("password must be between 4 and 255")
 
-    #another way of doing if else statement
+    # username must be between 4 and 255
+    if len(username) < 4 or len(username) > 255:
+        return jsonify("Username needs to be between 4 and 255 characters long.")
+
+    # check if email is valid
+
+    # another way of doing if else statement
 
     try:
         # Check that the email address is valid.
-        validation = validate_email(email)  
+        validation = validate_email(email)
         email = validation.email
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
         return jsonify('Email not valid: ' + str(e))
 
-    #username cannot include whitespace
-    if any (char.isspace() for char in username):
-         return jsonify ('Username cannot have spaces in it.')
-    
-    #email cannot include whitespace
-    if any (char.isspace() for char in email):
-         return jsonify('Email cannot have spaces in it.')
-    
+    # username cannot include whitespace
+    if any(char.isspace() for char in username):
+        return jsonify('Username cannot have spaces in it.')
+
+    # email cannot include whitespace
+    if any(char.isspace() for char in email):
+        return jsonify('Email cannot have spaces in it.')
+
     # to select all column we will use
     getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
-    cur.execute(getCountByUsername,[username])
+    cur.execute(getCountByUsername, [username])
     countOfUsername = cur.fetchone()
 
-    if countOfUsername[0] != 0 :
-         return jsonify('Username already exists.')
-              
+    if countOfUsername[0] != 0:
+        return jsonify('Username already exists.')
 
-    #ready to insert into database
+    # ready to insert into database
     try:
 
         insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
-        cur.execute(insertNewUser, [email, firstname, lastname, passwd, streetaddress, username, zipcode])
+        cur.execute(insertNewUser, [
+                    email, firstname, lastname, passwd, streetaddress, username, zipcode])
         conn.commit()
 
         msg = jsonify('Query inserted successfully')
@@ -649,15 +815,15 @@ def signup_post():
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
 
-
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
         conn.rollback()
-        return jsonify ( msg)        
+        return jsonify(msg)
     finally:
         cur.close()
 
     return msg
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
