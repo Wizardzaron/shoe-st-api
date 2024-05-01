@@ -48,13 +48,14 @@ def fetchObjectFromCursorAll(cursor):
     # print("description",cursor.description)
     print(len(tuple))
 
-    obj = dict()
+    obs = []
     for i in range(len(tuple)):
-        for element in tuple[i]:
-            # print(f"The element at index {element} is {tuple[i][element]}")
-            obj[cursor.description[element][0]] = tuple[element]
-
-    return obj
+        obj = dict()
+        for element in range(len(tuple[i])):
+            print(f"The element at index {element} is {tuple[i][element]}")
+            obj[cursor.description[element][0]] = tuple[i][element]
+        obs.append(obj)
+    return obs
 
 
 def fetchObjectFromCursor(cursor):
@@ -430,18 +431,18 @@ def shoedata_get():
 
         shoe_id = request.args.get('id')
         print(shoe_id)
-        # getInfo = '''
-        # SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , i.shoe_id, i.image_id, i.image_url, i.main_image, b.brand_name
-        # FROM shoe AS sd, image AS i, brand AS b
-        # WHERE sd.id = ? AND sd.id = i.shoe_id AND b.brand_id = sd.brand_id'''
+        getInfo = '''
+        SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , i.shoe_id, i.image_id, i.image_url, i.main_image, b.brand_name
+        FROM shoe AS sd, image AS i, brand AS b
+        WHERE sd.id = ? AND sd.id = i.shoe_id AND b.brand_id = sd.brand_id'''
 
-        # cur.execute(getInfo,[shoe_id,])
-        # shoeObj = fetchObjectFromCursor(cur)
+        cur.execute(getInfo,[shoe_id,])
+        shoeObj = fetchObjectFromCursor(cur)
 
         getSizes = '''SELECT size, in_stock FROM sizes WHERE shoe_id = ?'''
 
         cur.execute(getSizes,[shoe_id,])
-        shoeObj = fetchObjectFromCursorAll(cur)
+        shoeObj["sizes"] = fetchObjectFromCursorAll(cur)
 
         print(shoeObj)
 
