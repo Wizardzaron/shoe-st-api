@@ -167,18 +167,13 @@ def brandimages_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []
     brand_id = request.args.get('brand_id')
 
     try:
 
         getBrand = '''SELECT DISTINCT i.image_url FROM image as i, shoe as sd WHERE i.main_image = 1 AND sd.brand_id = ?'''
-        cur.execute(getBrand,[brand_id])
-        brand = cur.fetchall()
-        print(brand)
-        
-        for row in brand:
-            rows.append({"image_url": row[0]})
+        cur.execute(getBrand, [brand_id])
+        shoeObjBrandImages = fetchObjectFromCursorAll(cur)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getBrand, str(e))
@@ -186,7 +181,7 @@ def brandimages_get():
         # conn.rollback()
         return jsonify(msg)
 
-    msg = make_response(jsonify(rows))
+    msg = make_response(jsonify(shoeObjBrandImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
@@ -205,26 +200,12 @@ def shoeimages_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []
 
     try:
 
         getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
         cur.execute(getImage)
-        images = cur.fetchall()
-        print(images)
-        columns = ('shoe_id', 'image_id', 'image_url')
-
-        msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'GET'
-        msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
-
-        # creating dictionary
-        for row in images:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
+        shoeObjImages = fetchObjectFromCursorAll(cur)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
@@ -232,7 +213,13 @@ def shoeimages_get():
         # conn.rollback()
         return jsonify(msg)
 
-    return rows
+
+    msg = make_response(jsonify(shoeObjImages))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    return msg
 
 
 @app.route('/allmainimages', methods=['GET'])
@@ -245,7 +232,6 @@ def mainimages_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []
 
     try:
 
@@ -256,16 +242,7 @@ def mainimages_get():
         WHERE i.main_image = 1 AND i.shoe_id = sd.id AND sd.brand_id = bd.brand_id'''
 
         cur.execute(getImage)
-        images = cur.fetchall()
-        print(images)
-
-        # creating dictionary
-        for row in images:
-            # print(f"trying to serve {row}", file=sys.stderr)
-            # rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            # print(f"trying to serve {rows[-1]}", file=sys.stderr)
-            rows.append({"shoe_id": row[0], "image_id": row[1], "image_url": row[2],
-                        "shoe_name": row[3], "descript": row[4], "brand_name": row[5], "brand_id": row[6]})
+        shoeObjImages = fetchObjectFromCursorAll(cur)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
@@ -273,7 +250,7 @@ def mainimages_get():
         # conn.rollback()
         return jsonify(msg)
 
-    msg = make_response(jsonify(rows))
+    msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
@@ -341,45 +318,6 @@ def differentshoecolors_get():
     return rows
 
 
-@app.route('/shoesizes', methods=['GET'])
-def allshoesizes_get():
-
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
-
-    cur = conn.cursor()
-    rows = []
-
-    try:
-        id = request.args.get('id')
-        getSizes = '''SELECT size, in_stock FROM sizes WHERE shoe_id = ?'''
-        cur.execute(getSizes, [id])
-        info = cur.fetchall()
-        print(info)
-        columns = ('size', 'in_stock')
-
-        # creating dictionary
-        for row in info:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
-
-    except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getSizes, str(e))
-        # used to reset connection after bad query transaction
-        # conn.rollback()
-        return jsonify(msg)
-
-    msg = make_response(jsonify(rows))
-    msg.headers['Access-Control-Allow-Methods'] = 'GET'
-    msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
-
-    return msg
-
 
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
@@ -397,17 +335,6 @@ def allshoedata_get():
         FROM shoe AS sd, brand AS b'''
         cur.execute(getData)
         shoeObjList = fetchObjectFromCursorAll(cur)
-
-        # info = cur.fetchall()
-        # print(info)
-        # columns = ('id', 'color', 'sex', 'price', 'descript',
-        #            'shoe_name', 'brand_id', 'brand_name')
-
-        # # creating dictionary
-        # for row in info:
-        #     print(f"trying to serve {row}", file=sys.stderr)
-        #     rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-        #     print(f"trying to serve {rows[-1]}", file=sys.stderr)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
