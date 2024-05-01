@@ -48,9 +48,12 @@ def fetchObjectFromCursorAll(cursor):
     # print("description",cursor.description)
     print(len(tuple))
 
+    #need the array to store the shoe sizes because object dictionary keeps getting overwritten through every iteration
     obs = []
     for i in range(len(tuple)):
+        #need to put dict in outer for loop in order to prevent shoe sizes from being overridden with the last values
         obj = dict()
+        #needed the inner for loop in order to iterate through each array in the tuple
         for element in range(len(tuple[i])):
             print(f"The element at index {element} is {tuple[i][element]}")
             obj[cursor.description[element][0]] = tuple[i][element]
@@ -387,23 +390,24 @@ def allshoedata_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    rows = []
 
     try:
 
         getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name
         FROM shoe AS sd, brand AS b'''
         cur.execute(getData)
-        info = cur.fetchall()
-        print(info)
-        columns = ('id', 'color', 'sex', 'price', 'descript',
-                   'shoe_name', 'brand_id', 'brand_name')
+        shoeObjList = fetchObjectFromCursorAll(cur)
 
-        # creating dictionary
-        for row in info:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
+        # info = cur.fetchall()
+        # print(info)
+        # columns = ('id', 'color', 'sex', 'price', 'descript',
+        #            'shoe_name', 'brand_id', 'brand_name')
+
+        # # creating dictionary
+        # for row in info:
+        #     print(f"trying to serve {row}", file=sys.stderr)
+        #     rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
+        #     print(f"trying to serve {rows[-1]}", file=sys.stderr)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
@@ -411,12 +415,12 @@ def allshoedata_get():
         # conn.rollback()
         return jsonify(msg)
 
-    msg = make_response(jsonify(rows))
+    msg = make_response(jsonify(shoeObjList))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    return rows
+    return msg
 
 
 @app.route('/shoedata', methods=['GET'])
