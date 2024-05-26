@@ -1,4 +1,4 @@
-import psycopg2
+# import psycopg2
 import sqlite3
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response, current_app, jsonify
@@ -41,38 +41,40 @@ def connect_to_database():
     # )
     conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
-def fetchObjectFromCursorAll(cursor):
-            
-    tuple = cursor.fetchall()
-    print(tuple)
-    # print("description",cursor.description)
-    print(len(tuple))
 
-    #need the array to store the shoe sizes because object dictionary keeps getting overwritten through every iteration
+def fetchObjectFromCursorAll(cursor):
+
+    tuple = cursor.fetchall()
+    # print(tuple)
+    # print("description",cursor.description)
+    # print(len(tuple))
+
+    # need the array to store the shoe sizes because object dictionary keeps getting overwritten through every iteration
     obs = []
     for i in range(len(tuple)):
-        #need to put dict in outer for loop in order to prevent shoe sizes from being overridden with the last values
+        # need to put dict in outer for loop in order to prevent shoe sizes from being overridden with the last values
         obj = dict()
-        #needed the inner for loop in order to iterate through each array in the tuple
+        # needed the inner for loop in order to iterate through each array in the tuple
         for element in range(len(tuple[i])):
-            print(f"The element at index {element} is {tuple[i][element]}")
+            # print(f"The element at index {element} is {tuple[i][element]}")
             obj[cursor.description[element][0]] = tuple[i][element]
         obs.append(obj)
     return obs
 
 
 def fetchObjectFromCursor(cursor):
-            
+
     tuple = cursor.fetchone()
-    print(tuple)
+    # print(tuple)
     # print("description",cursor.description)
 
     obj = dict()
     for i in range(len(tuple)):
-        print(f"The element at index {i} is {tuple[i]}")
+        # print(f"The element at index {i} is {tuple[i]}")
         obj[cursor.description[i][0]] = tuple[i]
 
     return obj
+
 
 @app.route('/connect', methods=['GET'])
 def check_connection():
@@ -86,7 +88,94 @@ def check_connection():
     else:
         return jsonify({"message": "Connection is established"}), 200
 
+@app.route('/cartdata', methods=['POST'])
+def cartdata_post():
 
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+
+    customer_id = request.form.get('customer_id')
+    price = request.form.get('price')
+    brand_name = request.form.get('brand_name')
+    shoe_name = request.form.get('shoe_name')
+    size = request.form.get('size')
+
+    try:
+        insertCustomerCart = """INSERT INTO cart (customer_id, price, brand_name, shoe_name, size) VALUES (?,?,?,?,?)"""
+        cur.execute(insertCustomerCart, [customer_id, price, brand_name, shoe_name,size])
+        conn.commit()
+
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (insertCustomerCart, str(err))
+        return jsonify(msg)
+
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    
+    return msg
+
+@app.route('/getcartdata', methods=['GET'])
+def cartdata_get():
+
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+
+    customer_id = request.form.get('customer_id')
+
+    try:
+        getCustomerCart = """SELECT price, brand_name, shoe_name FROM cart WHERE customer_id = ?"""
+        cur.execute(getCustomerCart, [customer_id])
+        customerCartData = fetchObjectFromCursorAll(cur)
+
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (getCustomerCart, str(err))
+        return jsonify(msg)
+
+    msg = make_response(jsonify(customerCartData))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    
+    return msg
+
+@app.route('/deletecartdata', methods=['DELETE'])
+def cartdata_delete():
+    
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+
+    customer_id = request.form.get('customer_id')
+
+    try:
+        deleteCustomerCart = """DELETE FROM cart WHERE customer_id = ?"""
+        cur.execute(deleteCustomerCart, [customer_id])
+        conn.commit()
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (deleteCustomerCart, str(err))
+        return jsonify(msg)
+
+    msg = jsonify('Cart Deleted')
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'  
+    
+    return msg
 # @app.route('/updateshoe', methods=['PATCH'])
 # def shoedata_update():
 #     global conn
@@ -157,37 +246,6 @@ def check_connection():
 
 #     return jsonify('shoe created successfully')
 
-@app.route('/brandimages', methods=['GET'])
-def brandimages_get():
-
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
-
-    cur = conn.cursor()
-    brand_id = request.args.get('brand_id')
-
-    try:
-
-        getBrand = '''SELECT DISTINCT i.image_url FROM image as i, shoe as sd WHERE i.main_image = 1 AND sd.brand_id = ?'''
-        cur.execute(getBrand, [brand_id])
-        shoeObjBrandImages = fetchObjectFromCursorAll(cur)
-
-    except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getBrand, str(e))
-        # used to reset connection after bad query transaction
-        # conn.rollback()
-        return jsonify(msg)
-
-    msg = make_response(jsonify(shoeObjBrandImages))
-    msg.headers['Access-Control-Allow-Methods'] = 'GET'
-    msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
-
-    return msg
-
 
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages_get():
@@ -212,7 +270,6 @@ def shoeimages_get():
         # used to reset connection after bad query transaction
         # conn.rollback()
         return jsonify(msg)
-
 
     msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
@@ -318,7 +375,6 @@ def differentshoecolors_get():
     return rows
 
 
-
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
     global conn
@@ -363,18 +419,26 @@ def shoedata_get():
         shoe_id = request.args.get('id')
         print(shoe_id)
         getInfo = '''
-        SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , i.shoe_id, i.image_id, i.image_url, i.main_image, b.brand_name
-        FROM shoe AS sd, image AS i, brand AS b
-        WHERE sd.id = ? AND sd.id = i.shoe_id AND b.brand_id = sd.brand_id'''
+        SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , b.brand_name, b.brand_id
+        FROM shoe AS sd, brand AS b
+        WHERE sd.id = ? AND b.brand_id = sd.brand_id'''
 
-        cur.execute(getInfo,[shoe_id,])
+        cur.execute(getInfo, [shoe_id,])
         shoeObj = fetchObjectFromCursor(cur)
 
         getSizes = '''SELECT size, in_stock FROM sizes WHERE shoe_id = ?'''
 
-        cur.execute(getSizes,[shoe_id,])
+        cur.execute(getSizes, [shoe_id,])
         shoeObj["sizes"] = fetchObjectFromCursorAll(cur)
 
+        getBrand = '''SELECT i.image_url, i.shoe_id FROM image as i, shoe as sd WHERE i.main_image = 1 AND 
+        i.shoe_id = sd.id AND sd.brand_id = ?'''
+        cur.execute(getBrand, [shoeObj["brand_id"],])
+        shoeObj["brand_images"] = fetchObjectFromCursorAll(cur)
+
+        getImage = ''' SELECT shoe_id, image_id, image_url, main_image FROM image WHERE shoe_id = ?'''
+        cur.execute(getImage, [shoe_id])
+        shoeObj["images"] = fetchObjectFromCursorAll(cur)
         print(shoeObj)
 
     except Exception as e:
@@ -434,9 +498,9 @@ def shoebrand_get():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
@@ -453,7 +517,7 @@ def login():
 
         # NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
-        getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = %s AND passwd = %s'''
+        getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = ? AND passwd = ?'''
         cur.execute(getCountByUsernameAndPassword, [username, passwd])
 
         countOfUsernameAndPassword = cur.fetchone()
@@ -471,7 +535,7 @@ def login():
             conn.rollback()
             return t
 
-        getId = '''SELECT id FROM customer WHERE username = %s AND passwd = %s'''
+        getId = '''SELECT id FROM customer WHERE username = ? AND passwd = ?'''
         cur.execute(getId, [username, passwd])
         id = cur.fetchone()
 
@@ -681,9 +745,9 @@ def logout():
 @app.route('/signup', methods=['POST'])
 def signup_post():
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
@@ -727,7 +791,7 @@ def signup_post():
         return jsonify('Email cannot have spaces in it.')
 
     # to select all column we will use
-    getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
+    getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = ?'''
     cur.execute(getCountByUsername, [username])
     countOfUsername = cur.fetchone()
 
@@ -737,7 +801,7 @@ def signup_post():
     # ready to insert into database
     try:
 
-        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (?,?,?,?,?,?,?)"""
         cur.execute(insertNewUser, [
                     email, firstname, lastname, passwd, streetaddress, username, zipcode])
         conn.commit()
@@ -745,7 +809,7 @@ def signup_post():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'https://shoe-st.vercel.app/'
+        msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
