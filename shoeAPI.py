@@ -374,6 +374,38 @@ def cartitem_delete():
     
     return msg
 
+@app.route('/checkshippingaddress', methods=['GET'])
+def shippingaddress_check():
+
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    
+    cur = conn.cursor()
+    customer_id = session['id']
+    msg = jsonify(1)
+
+    
+    try:
+        getAddress = """SELECT country,city,state,streetaddress,zipcode FROM customer WHERE id = ?"""
+        cur.execute(getAddress,[customer_id])
+        addressObj = fetchObjectFromCursor(cur)
+        for index in addressObj:
+            if (addressObj[index] is None):
+                msg = jsonify(0)
+
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (getAddress, str(err))
+        return jsonify(msg) 
+    
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
+    
+    return msg
+    
 # @app.route('/checkusername', methods=['GET'])
 # def username_check():
 
@@ -750,21 +782,44 @@ def allshoes_get():
 
         #needed to include JOIN clause to stop cartesian product from returning duplicate values
         getInfo = '''
-        SELECT sd.color, sd.sex, sd.price, sd.descript, sd.id ,sd.shoe_name,b. brand_name, b.brand_id, i.image_id, i.image_url, i.main_image
+        SELECT 
+            sd.sex, 
+            sd.descript,
+            sd.id, 
+            sd.shoe_name,
+            b.brand_name, 
+            b.brand_id
         FROM shoe AS sd
         JOIN brand AS b ON b.brand_id = sd.brand_id
-        JOIN image as i ON i.shoe_id = sd.id
-        WHERE i.main_image = 1 AND i.first_color = 1'''
+        GROUP BY b.brand_id
+        ORDER BY b.brand_id '''
 
         cur.execute(getInfo)
-        shoeObj = fetchObjectFromCursorAll(cur)
-        # print(shoeObj["image_url"])
+        brandObjects = fetchObjectFromCursorAll(cur)
+        # print(shoeObj[{'brand_id'}])
+        for brand in brandObjects:
+            brand_id = brand["brand_id"]
+            getImages = '''
+            SELECT 
+                sd.brand_id, 
+                sd.id,
+                sd.price,
+                sd.color,
+                sd.color_order, 
+                i.image_id, 
+                i.image_url 
+            FROM shoe AS sd
+            JOIN image as i ON i.shoe_id = sd.id 
+            WHERE sd.brand_id = ? AND i.main_image = 1
+            ORDER BY sd.color_order'''
+            cur.execute(getImages,[brand_id])
+            brand["images"] = fetchObjectFromCursorAll(cur)
             
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
-    msg = make_response(jsonify(shoeObj))
+    msg = make_response(jsonify(brandObjects))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
@@ -772,7 +827,7 @@ def allshoes_get():
     return msg
     
     
-
+#
 @app.route('/allmainimages', methods=['GET'])
 def mainimages_get():
 
@@ -868,7 +923,7 @@ def differentshoecolors_get():
 
     return rows
 
-
+#rename to shoebrands
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
     global conn
@@ -881,10 +936,12 @@ def allshoedata_get():
 
     try:
 
-        getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name
-        FROM shoe AS sd, brand AS b'''
+        getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name, i.shoe_id, i.image_id, i.image_url
+        FROM shoe AS sd, brand AS b, image AS i
+        WHERE i.main_image = 1 AND i.shoe_id = sd.id AND sd.brand_id = b.brand_id'''
         cur.execute(getData)
         shoeObjList = fetchObjectFromCursorAll(cur)
+
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
@@ -1058,6 +1115,62 @@ def login():
         conn.rollback()
         return jsonify(msg)
 
+@app.route('/newquantity', methods=['PATCH'])
+def newquantity_patch():
+    
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    cur = conn.cursor()
+    try:
+
+        msg = jsonify('Quantity has been updated')
+        msg.headers['Access-Control-Allow-Methods'] = 'PATCH'
+        msg.headers['Access-Control-Allow-Origin'] = '*'
+
+        cartId = request.args.get("cart_item_id")
+        quantity = request.args.get("newQuantity")
+
+        updateQuantity = '''UPDATE cartitems SET Quantity = ? WHERE cart_item_id = ?'''
+        cur.execute(updateQuantity, [quantity,cartId])
+        conn.commit()
+
+    except Exception as e:
+        msg = 'Query Failed: %s\nError: %s' % (updateQuantity, str(e))
+        return jsonify(msg)
+
+    return msg
+
+@app.route('/totalcost', methods=['GET'])
+def totalcost_get():
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    msg = 0
+    try:
+        arrayOfprice = request.args.get("prices")
+        splitPrice = arrayOfprice.split(',')
+        prices = [int(price) for price in splitPrice] 
+        arrayOfQuantity = request.args.get("quantity")
+        splitQuantity = arrayOfQuantity.split(',')
+        quantitys = [int(quantity) for quantity in splitQuantity] 
+
+        for index in range(len(prices)):
+            msg += prices[index] * quantitys[index]        
+            # print(prices[index])
+        
+        print(msg)
+
+    except Exception as e:
+        msg = str(e)
+        return jsonify(msg)
+
+    return str(msg)
+
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
@@ -1073,9 +1186,6 @@ def userdata_get():
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
         msg.headers['Access-Control-Allow-Origin'] = '*'
-
-        # need to include CORS credentials in order to send session cookie to client
-        msg.headers['Access-Control-Allow-Credentials'] = True
 
         if "id" not in session:
             msg = ({"message": "User could not be found due to id returning none"})
@@ -1141,13 +1251,13 @@ def all_userdata_get():
 @app.route('/ordercreate', methods=['POST', 'PATCH'])
 def order_post():
     global conn
-    if not conn or conn.closed:
+    if not conn or conn is None:
         connect_to_database()
-        if conn.closed:
+        if conn is None:
             return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
-    total = request.form.get('total')
+    total = request.args.get('total')
 
     today = date.today()
     dateoforder = today
@@ -1156,7 +1266,7 @@ def order_post():
 
     try:
 
-        insertNewOrder = """INSERT INTO orders (orderdate,total) VALUES (%s,%s)"""
+        insertNewOrder = """INSERT INTO orders (orderdate,total) VALUES (?,?)"""
         cur.execute(insertNewOrder, [dateoforder, total])
         conn.commit()
 
