@@ -7,6 +7,7 @@ from flask import send_from_directory
 from functools import wraps
 from email_validator import validate_email, EmailNotValidError
 import sys
+import psycopg2
 from flask_cors import CORS
 from collections import defaultdict
 from flask_apscheduler import APScheduler
@@ -47,15 +48,15 @@ def connect_to_database():
 
     global conn
 
-    # conn = psycopg2.connect(
-    #     host=os.environ.get('DB_HOST'),
-    #     port=os.environ.get('DB_PORT'),
-    #     dbname=os.environ.get('DB_NAME'),
-    #     user=os.environ.get('DB_USER'),
-    #     password=os.environ.get('DB_PASS'),
-    #     keepalives_idle=3000
-    # )
-    conn = sqlite3.connect("shoe.db", check_same_thread=False)
+    conn = psycopg2.connect(
+        host=os.environ.get('DB_HOST'),
+        port=os.environ.get('DB_PORT'),
+        dbname=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASS'),
+        keepalives_idle=3000
+    )
+    # conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
 def deletePasscode():
 
@@ -109,15 +110,16 @@ def hashingThePassword(password):
     
     print("Hi")
     print(password)
-    print("Prick") 
     pass_bytes = password.encode('utf-8')
     
     #256 does not encrypt, it hashs the values
-    
+    #convert into a string
     hashPass = hashlib.sha256(pass_bytes)
-    print(hashPass.digest())
+    # print(hashPass.digest())
     
-    return hashPass.digest()
+    stringPass = str(hashPass.digest())
+    
+    return stringPass
 
 def fetchObjectFromCursorAll(cursor):
 
@@ -190,13 +192,13 @@ def itemdata_post():
 
     cart_id = 0
     try:
-        getCartItem = """SELECT cart_id FROM cart WHERE customer_id = ?"""
+        getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
         cur.execute(getCartItem, [customer_id])
         row = cur.fetchone()
         if row is not None:
             cart_id = row[0]
         else:
-            insertCustomerCart = """INSERT INTO cart (customer_id) VALUES (?)"""
+            insertCustomerCart = """INSERT INTO cart (customer_id) VALUES (%s)"""
             cur.execute(insertCustomerCart, [customer_id])
             cart_id = cur.lastrowid()
     except Exception as err:
@@ -206,7 +208,7 @@ def itemdata_post():
     
     
     try:
-        insertItemData = """INSERT INTO cartitems (cart_id, size_id) VALUES (?,?)"""
+        insertItemData = """INSERT INTO cartitems (cart_id, size_id) VALUES (%s,%s)"""
         cur.execute(insertItemData, [cart_id, size_id])
         conn.commit()
     except Exception as err:
@@ -237,7 +239,7 @@ def itemdata_get():
             SELECT DISTINCT i.image_url, i.image_id ,sd.shoe_name,sd.id ,sd.price, sd.sex, sd.color, sz.size, sz.size_id, bd.brand_name, cts.cart_item_id, cts.quantity
             FROM image AS i, shoe AS sd, sizes as sz ,brand AS bd, cart AS ct, cartitems AS cts
             WHERE i.main_image = 1
-            AND  ct.customer_id = ?
+            AND  ct.customer_id = %s
             AND i.shoe_id = sd.id 
             AND sd.brand_id = bd.brand_id 
             AND ct.cart_id = cts.cart_id 
@@ -272,7 +274,7 @@ def cartdata_get():
     customer_id = session['id']
 
     try:
-        getCartItem = """SELECT cart_id FROM cart WHERE customer_id = ?"""
+        getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
         cur.execute(getCartItem, [customer_id])
         customerCartData = fetchObjectFromCursor(cur)
 
@@ -301,7 +303,7 @@ def cartdata_delete():
     customer_id = request.form.get('customer_id')
 
     try:
-        deleteCustomerCart = """DELETE FROM cart WHERE customer_id = ?"""
+        deleteCustomerCart = """DELETE FROM cart WHERE customer_id = %s"""
         cur.execute(deleteCustomerCart, [customer_id])
         conn.commit()
     except Exception as err:
@@ -330,7 +332,7 @@ def cartitemid_get():
     size_id = request.form.get('size_id')
     
     try:
-        cartId = """SELECT cart_item_id FROM cartitems WHERE cart_id = ? AND size_id = ?"""
+        cartId = """SELECT cart_item_id FROM cartitems WHERE cart_id = %s AND size_id = %s"""
         cur.execute(cartId, [cart_id, size_id])
         cartObjId = fetchObjectFromCursorAll(cur)
     except Exception as err:
@@ -360,7 +362,7 @@ def cartitem_delete():
     cart_item_id = data.get('cart_item_id')
         
     try:
-        deleteCartItem = """DELETE FROM cartitems WHERE cart_item_id = ?"""
+        deleteCartItem = """DELETE FROM cartitems WHERE cart_item_id = %s"""
         cur.execute(deleteCartItem, [cart_item_id])
         conn.commit()
     except Exception as err:
@@ -389,7 +391,7 @@ def shippingaddress_check():
 
     
     try:
-        getAddress = """SELECT country,city,state,streetaddress,zipcode FROM customer WHERE id = ?"""
+        getAddress = """SELECT country,city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
         cur.execute(getAddress,[customer_id])
         addressObj = fetchObjectFromCursor(cur)
         for index in addressObj:
@@ -438,6 +440,8 @@ def shippingaddress_check():
 #         t = '{' + f'"exist":"{str(s)}"' + '}'
 
 #     return jsonify(t)
+
+#check
 @app.route('/passwordchange', methods=['GET', 'PATCH'])
 def password_change():
     
@@ -458,7 +462,7 @@ def password_change():
         
     try:
 
-        changePass = '''UPDATE customer SET passwd = ? WHERE username = ?'''
+        changePass = '''UPDATE customer SET passwd = %s WHERE username = %s'''
         cur.execute(changePass, [hashpass, username])
         conn.commit()
 
@@ -468,6 +472,7 @@ def password_change():
     
     return jsonify("Password changed sucessfully")
 
+#check
 @app.route('/passwordcode', methods=['GET', 'PATCH'])
 def passwordcode_check():
 
@@ -491,12 +496,12 @@ def passwordcode_check():
 
     
     try:
-        getPasscode = """SELECT temporarypasscode, codedate FROM customer WHERE username = ?"""
+        getPasscode = """SELECT temporarypasscode, codedate FROM customer WHERE username = %s"""
         cur.execute(getPasscode, [username])
         customerObjCode = fetchObjectFromCursor(cur)
-        print(customerObjCode)
         retrievedPass = customerObjCode["temporarypasscode"]
         retrievedDate = customerObjCode["codedate"]
+
         print(retrievedDate)
 
     except Exception as err:
@@ -505,8 +510,9 @@ def passwordcode_check():
         pass
 
     #need to create an object in order to use timedelta
-    date_object = datetime.strptime(retrievedDate, "%Y-%m-%d %H:%M:%S.%f")
-    print(date_object)
+    # date_object = datetime.strptime(retrievedDate, "%Y-%m-%d %H:%M:%S.%f")
+    # print(date_object)
+    date_object = retrievedDate
 
     result = date_object + timedelta(hours=1)
 
@@ -515,12 +521,12 @@ def passwordcode_check():
     now = datetime.now()
     try:
         if now > result:
-            nullifyCode = """UPDATE customer SET temporarypasscode = NULL, codedate = NULL WHERE username = ?"""
+            nullifyCode = """UPDATE customer SET temporarypasscode = NULL, codedate = NULL WHERE username = %s"""
             cur.execute(nullifyCode, [username])
             conn.commit()
         else:
             if passwordcode == retrievedPass:
-                nullifyCode = """UPDATE customer SET temporarypasscode = NULL, codedate = NULL WHERE username = ?"""
+                nullifyCode = """UPDATE customer SET temporarypasscode = NULL, codedate = NULL WHERE username = %s"""
                 cur.execute(nullifyCode, [username])
                 conn.commit()    
                 msg = jsonify("True")          
@@ -531,11 +537,6 @@ def passwordcode_check():
         return jsonify(msg)
 
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-
-    # if session['code'] == passwordcode:
-    #     session.pop('code', None)
-    #     msg = jsonify("True")
-
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
 
@@ -543,6 +544,7 @@ def passwordcode_check():
 
     return msg
 
+#check
 @app.route('/sendemail', methods=['GET', 'PATCH'])
 def sendemail_send():
 
@@ -563,7 +565,7 @@ def sendemail_send():
    
                 
     try:
-        getEmailItem = """SELECT EMAIL FROM customer WHERE username = ?"""
+        getEmailItem = """SELECT EMAIL FROM customer WHERE username = %s"""
         cur.execute(getEmailItem, [username])
         customerObjEmail = fetchObjectFromCursor(cur)
         if customerObjEmail is not None:
@@ -573,7 +575,7 @@ def sendemail_send():
         pass
 
     try:
-        sendPassCode = """UPDATE customer SET temporarypasscode = ?, codedate = ? WHERE username = ?"""
+        sendPassCode = """UPDATE customer SET temporarypasscode = %s, codedate = %s WHERE username = %s"""
         cur.execute(sendPassCode, [code,now,username])
         conn.commit()
     except Exception as err:
@@ -658,6 +660,8 @@ def sendemail_send():
 #         cur.close()
 
 #     return jsonify('shoe created successfully')
+
+#check
 @app.route('/allsizes', methods=['GET'])
 def allsizes_get():
     global conn
@@ -669,10 +673,10 @@ def allsizes_get():
     cur = conn.cursor()   
     
     shoe_id = request.form.get('id')
-    
+    print(shoe_id)
     try:
 
-        getSize = '''SELECT size FROM sizes WHERE shoe_id = ? AND in_stock = 1'''
+        getSize = '''SELECT size FROM sizes WHERE shoe_id = %s AND in_stock > 0'''
         cur.execute(getSize, [shoe_id])
         shoeObjSize = fetchObjectFromCursorAll(cur)
 
@@ -687,7 +691,7 @@ def allsizes_get():
     
     return msg
     
-
+#check
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages_get():
 
@@ -768,7 +772,7 @@ def allshoecolors_get():
 
     return msg
 
-
+#in postgresql if you want to use GROUP BY it needs to be applied to all attributes
 
 @app.route('/allshoes', methods=['GET'])
 def allshoes_get():
@@ -791,7 +795,6 @@ def allshoes_get():
             b.brand_id
         FROM shoe AS sd
         JOIN brand AS b ON b.brand_id = sd.brand_id
-        GROUP BY b.brand_id
         ORDER BY b.brand_id '''
 
         cur.execute(getInfo)
@@ -810,7 +813,7 @@ def allshoes_get():
                 i.image_url 
             FROM shoe AS sd
             JOIN image as i ON i.shoe_id = sd.id 
-            WHERE sd.brand_id = ? AND i.main_image = 1
+            WHERE sd.brand_id = %s AND i.main_image = 1
             ORDER BY sd.color_order'''
             cur.execute(getImages,[brand_id])
             brand["images"] = fetchObjectFromCursorAll(cur)
@@ -827,7 +830,7 @@ def allshoes_get():
     return msg
     
     
-#
+#check
 @app.route('/allmainimages', methods=['GET'])
 def mainimages_get():
 
@@ -863,7 +866,7 @@ def mainimages_get():
 
     return msg
 
-
+#check?
 @app.route('/differentshoecolors', methods=['GET'])
 def differentshoecolors_get():
 
@@ -889,9 +892,9 @@ def differentshoecolors_get():
                 image AS i, 
                 brand AS b
         WHERE 
-                sd.id = ? AND 
+                sd.id = %s AND 
                 sd.id = i.shoe_id AND 
-                i.main_image = true AND 
+                i.main_image = 1 AND 
                 b.brand_id = sd.brand_id'''
 
         cur.execute(getInfo, [shoe_id])
@@ -923,6 +926,7 @@ def differentshoecolors_get():
 
     return rows
 
+#check?
 #rename to shoebrands
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
@@ -956,7 +960,7 @@ def allshoedata_get():
 
     return msg
 
-
+#check
 @app.route('/shoedata', methods=['GET'])
 def shoedata_get():
     global conn
@@ -972,22 +976,22 @@ def shoedata_get():
         getInfo = '''
         SELECT sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name , b.brand_name, b.brand_id
         FROM shoe AS sd, brand AS b
-        WHERE sd.id = ? AND b.brand_id = sd.brand_id'''
+        WHERE sd.id = %s AND b.brand_id = sd.brand_id'''
 
         cur.execute(getInfo, [shoe_id,])
         shoeObj = fetchObjectFromCursor(cur)
 
-        getSizes = '''SELECT size, size_id, in_stock FROM sizes WHERE shoe_id = ?'''
+        getSizes = '''SELECT size, size_id, in_stock FROM sizes WHERE shoe_id = %s'''
 
         cur.execute(getSizes, [shoe_id,])
         shoeObj["sizes"] = fetchObjectFromCursorAll(cur)
 
         getBrand = '''SELECT i.image_url, i.shoe_id FROM image as i, shoe as sd WHERE i.main_image = 1 AND 
-        i.shoe_id = sd.id AND sd.brand_id = ?'''
+        i.shoe_id = sd.id AND sd.brand_id = %s'''
         cur.execute(getBrand, [shoeObj["brand_id"],])
         shoeObj["brand_images"] = fetchObjectFromCursorAll(cur)
 
-        getImage = ''' SELECT shoe_id, image_id, image_url, main_image FROM image WHERE shoe_id = ?'''
+        getImage = ''' SELECT shoe_id, image_id, image_url, main_image FROM image WHERE shoe_id = %s'''
         cur.execute(getImage, [shoe_id])
         shoeObj["images"] = fetchObjectFromCursorAll(cur)
         print(shoeObj)
@@ -1015,11 +1019,11 @@ def shoebrand_get():
     rows = []
     try:
 
-        brand = request.args.get('brand')
+        manufacture = request.args.get('manufacture_id')
         # itemId = 'FB7582-001'
         # print(itemId)
-        getInfo = '''SELECT names, item_id, price ,images FROM shoes WHERE brand = %s '''
-        cur.execute(getInfo, [brand])
+        getInfo = '''SELECT names, item_id, price ,images FROM shoe WHERE manufacture_id = %s '''
+        cur.execute(getInfo, [manufacture])
         info = cur.fetchall()
 
         columns = ('names', 'item_id', 'price', 'images')
@@ -1058,18 +1062,18 @@ def login():
     try:
 
         msg = jsonify('Query inserted successfully')
-        msg.headers['Access-Control-Allow-Methods'] = 'POST'
+        msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         msg.headers['Access-Control-Allow-Origin'] = '*'
         msg.headers['Access-Control-Allow-Credentials'] = True
 
-        username = request.form.get('username')
-        passwd = request.form.get('passwd')
+        username = request.args.get('username')
+        passwd = request.args.get('passwd')
 
         encrpytedPassword = hashingThePassword(passwd)
         # NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
-        getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = ? AND passwd = ?'''
+        getCountByUsernameAndPassword = '''SELECT count(*) FROM customer WHERE username = %s AND passwd = %s'''
         cur.execute(getCountByUsernameAndPassword, [username, encrpytedPassword])
 
         countOfUsernameAndPassword = cur.fetchone()
@@ -1087,7 +1091,7 @@ def login():
             conn.rollback()
             return t
 
-        getId = '''SELECT id FROM customer WHERE username = ? AND passwd = ?'''
+        getId = '''SELECT id FROM customer WHERE username = %s AND CAST (passwd AS TEXT) = %s'''
         cur.execute(getId, [username, encrpytedPassword])
         id = cur.fetchone()
 
@@ -1133,7 +1137,7 @@ def newquantity_patch():
         cartId = request.args.get("cart_item_id")
         quantity = request.args.get("newQuantity")
 
-        updateQuantity = '''UPDATE cartitems SET Quantity = ? WHERE cart_item_id = ?'''
+        updateQuantity = '''UPDATE cartitems SET Quantity = %s WHERE cart_item_id = %s'''
         cur.execute(updateQuantity, [quantity,cartId])
         conn.commit()
 
@@ -1266,7 +1270,7 @@ def order_post():
 
     try:
 
-        insertNewOrder = """INSERT INTO orders (orderdate,total) VALUES (?,?)"""
+        insertNewOrder = """INSERT INTO orders (orderdate,total) VALUES (%s,%s)"""
         cur.execute(insertNewOrder, [dateoforder, total])
         conn.commit()
 
@@ -1276,7 +1280,7 @@ def order_post():
         return jsonify(msg)
 
     try:
-        updateCustomerOrder = """UPDATE customer SET orderid = ? WHERE id =? """
+        updateCustomerOrder = """UPDATE customer SET orderid = %s WHERE id = %s """
         cur.execute(updateCustomerOrder, [dateoforder, id])
         conn.commit()
 
@@ -1433,7 +1437,7 @@ def signup_post():
         return jsonify('Email cannot have spaces in it.')
 
     # to select all column we will use
-    getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = ?'''
+    getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
     cur.execute(getCountByUsername, [username])
     countOfUsername = cur.fetchone()
 
@@ -1445,7 +1449,7 @@ def signup_post():
     # ready to insert into database
     try:
 
-        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (?,?,?,?,?,?,?)"""
+        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
         cur.execute(insertNewUser, [
                     email, firstname, lastname, encrpytedPassword, streetaddress, username, zipcode])
         conn.commit()
