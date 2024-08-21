@@ -1070,6 +1070,7 @@ def login():
         username = request.args.get('username')
         passwd = request.args.get('passwd')
 
+        print(username, passwd)
         encrpytedPassword = hashingThePassword(passwd)
         # NOTE in sqlite and postgresql you use %s as placeholders instead of ?
 
@@ -1339,13 +1340,13 @@ def getlogin():
 
     # needed to include elif in case the user didn't close down their browser window and wanted to keep using the site
 
-    # print(str(session['loggedin']))
+    print(str(session))
     # if session['loggedin'] == 'False':
     #     s = str(session)
     #     t = jsonify(loggedin=s)
     #     print(t)
     #     return t
-    if 'loggedin' in session:
+    if 'loggedin' in session and session['loggedin'] == True:
 
         s = str(session['loggedin'])
         i = session['id']
