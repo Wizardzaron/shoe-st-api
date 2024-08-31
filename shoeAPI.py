@@ -50,11 +50,13 @@ def connect_to_database():
 
     conn = psycopg2.connect(
         host=os.environ.get('DB_HOST'),
-        port=os.environ.get('DB_PORT'),
+        port=os.environ.get('DB_PORT',5432),
         dbname=os.environ.get('DB_NAME'),
         user=os.environ.get('DB_USER'),
         password=os.environ.get('DB_PASS'),
-        keepalives_idle=3000
+        #need to figure out units
+        keepalives_idle=180,
+        connect_timeout=2 
     )
     # conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
@@ -175,8 +177,10 @@ def itemdata_post():
 
     global conn
     if not conn or conn is None:
+        print("Connection is not established")
         connect_to_database()
         if conn is None:
+            print("Unable to connect to database")
             return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
@@ -220,6 +224,7 @@ def itemdata_post():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
+    conn.close()
     return msg
 
 @app.route('/cartitems', methods=['GET'])
@@ -257,6 +262,7 @@ def itemdata_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
+    conn.close()
     return msg
 
 
@@ -287,6 +293,7 @@ def cartdata_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
+    conn.close()
     return msg
 
 @app.route('/cartdataremoved', methods=['DELETE'])
@@ -315,6 +322,7 @@ def cartdata_delete():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'  
     
+    conn.close()
     return msg
 
 @app.route('/cartitemid', methods=['GET'])
@@ -343,7 +351,8 @@ def cartitemid_get():
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
-    
+
+    conn.close() 
     return msg
 
 @app.route('/cartitemremoved', methods=['DELETE'])
@@ -373,7 +382,8 @@ def cartitem_delete():
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
-    
+
+    conn.close()
     return msg
 
 @app.route('/checkshippingaddress', methods=['GET'])
@@ -406,6 +416,7 @@ def shippingaddress_check():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
     
+    conn.close()
     return msg
     
 # @app.route('/checkusername', methods=['GET'])
@@ -470,6 +481,7 @@ def password_change():
         msg = 'Query Failed: %s\nError: %s' % (changePass, str(e))
         return jsonify(msg)
     
+    conn.close()
     return jsonify("Password changed sucessfully")
 
 #check
@@ -541,7 +553,8 @@ def passwordcode_check():
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
 
     print(msg)
-
+    
+    conn.close()
     return msg
 
 #check
@@ -585,6 +598,8 @@ def sendemail_send():
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     print(response)
+    
+    conn.close()
     return response
 
     
@@ -689,6 +704,7 @@ def allsizes_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
+    conn.close()
     return msg
     
 #check
@@ -721,6 +737,7 @@ def shoeimages_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
 @app.route('/allshoecolors', methods=['GET'])
 def allshoecolors_get():
@@ -770,6 +787,7 @@ def allshoecolors_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
 
 #in postgresql if you want to use GROUP BY it needs to be applied to all attributes
@@ -827,6 +845,7 @@ def allshoes_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
     
     
@@ -864,6 +883,7 @@ def mainimages_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
 
 #check?
@@ -924,6 +944,7 @@ def differentshoecolors_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return rows
 
 #check?
@@ -958,6 +979,7 @@ def allshoedata_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
 
 #check
@@ -1005,6 +1027,7 @@ def shoedata_get():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
+    conn.close()
     return msg
 
 
@@ -1038,6 +1061,7 @@ def shoebrand_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
+    conn.close()
     return rows
 
 # @app.route('/search', methods=['GET'])
@@ -1113,11 +1137,13 @@ def login():
         t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' + '}'
         print(session)
         print(t)
+        conn.close()
         return t
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getId, str(e))
         conn.rollback()
+        conn.close()
         return jsonify(msg)
 
 @app.route('/newquantity', methods=['PATCH'])
@@ -1145,7 +1171,7 @@ def newquantity_patch():
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (updateQuantity, str(e))
         return jsonify(msg)
-
+    conn.close()
     return msg
 
 @app.route('/totalcost', methods=['GET'])
@@ -1174,6 +1200,7 @@ def totalcost_get():
         msg = str(e)
         return jsonify(msg)
 
+    conn.close()
     return str(msg)
 
 
@@ -1218,6 +1245,7 @@ def userdata_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
+    conn.close()
     return rows
 
 
@@ -1250,6 +1278,7 @@ def all_userdata_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
+    conn.close()
     return rows
 
 
@@ -1293,7 +1322,7 @@ def order_post():
 
     # finally:
     #     cur.close()
-
+    conn.close()
     return jsonify('order created successfully')
 
 # @app.route('/setcookie', methods=['GET'])
@@ -1354,6 +1383,7 @@ def getlogin():
         # t = '{' + f'"loggedin":"{str(s)}", "id":"{i}"' + '}'
         t = jsonify(loggedin=s, id=i)
         print(t)
+        conn.close()
         return t
     else:
         # used to create session loggedin just in case the cookie doesn't exist yet
@@ -1363,6 +1393,7 @@ def getlogin():
         # t = '{' + f'"loggedin":"{str(s)}"' + '}'
         t = jsonify(loggedin=s)
         print(t)
+        conn.close()
         return t
 
 
@@ -1386,6 +1417,7 @@ def logout():
         t = '{' + f'"Signout": "Successful"' + '}'
     else:
         t = '{' + f'"Signout": "Failure"' + '}'
+    conn.close()
     return t
 
 
@@ -1410,10 +1442,12 @@ def signup_post():
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
+        conn.close()
         return jsonify("password must be between 4 and 255")
 
     # username must be between 4 and 255
     if len(username) < 4 or len(username) > 255:
+        conn.close()
         return jsonify("Username needs to be between 4 and 255 characters long.")
 
     # check if email is valid
@@ -1427,14 +1461,17 @@ def signup_post():
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
+        conn.close()
         return jsonify('Email not valid: ' + str(e))
 
     # username cannot include whitespace
     if any(char.isspace() for char in username):
+        conn.close()
         return jsonify('Username cannot have spaces in it.')
 
     # email cannot include whitespace
     if any(char.isspace() for char in email):
+        conn.close()
         return jsonify('Email cannot have spaces in it.')
 
     # to select all column we will use
@@ -1443,6 +1480,7 @@ def signup_post():
     countOfUsername = cur.fetchone()
 
     if countOfUsername[0] != 0:
+        conn.close()
         return jsonify('Username already exists.')
 
     encrpytedPassword = hashingThePassword(passwd)
@@ -1463,10 +1501,11 @@ def signup_post():
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
         conn.rollback()
+        conn.close()
         return jsonify(msg)
     finally:
         cur.close()
-
+    conn.close()
     return msg
 
 
