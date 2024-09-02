@@ -23,6 +23,7 @@ def connect_to_database():
         connect_timeout=0 
     )
 
+@app.route("/allshoedata", methods=["GET"])
 def allshoedata_get():
     global conn
     if not conn or conn is None:
