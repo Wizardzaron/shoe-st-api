@@ -1546,12 +1546,10 @@ def signup_post():
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
-        conn.close()
         return jsonify("password must be between 4 and 255")
 
     # username must be between 4 and 255
     if len(username) < 4 or len(username) > 255:
-        conn.close()
         return jsonify("Username needs to be between 4 and 255 characters long.")
 
     # check if email is valid
@@ -1565,17 +1563,14 @@ def signup_post():
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
-        conn.close()
         return jsonify('Email not valid: ' + str(e))
 
     # username cannot include whitespace
     if any(char.isspace() for char in username):
-        conn.close()
         return jsonify('Username cannot have spaces in it.')
 
     # email cannot include whitespace
     if any(char.isspace() for char in email):
-        conn.close()
         return jsonify('Email cannot have spaces in it.')
 
     # to select all column we will use
@@ -1584,7 +1579,6 @@ def signup_post():
     countOfUsername = cur.fetchone()
 
     if countOfUsername[0] != 0:
-        conn.close()
         return jsonify('Username already exists.')
 
     encrpytedPassword = hashingThePassword(passwd)
@@ -1604,8 +1598,6 @@ def signup_post():
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
-        conn.rollback()
-        conn.close()
         return jsonify(msg)
     finally:
         conn.close()
