@@ -29,7 +29,7 @@ def connect_to_database():
         password="p57a9046276c45374a551965a6a904b4a46bfe89b0ccc2c39fc902fec68ed19a1",
         #need to figure out units
         #seconds
-        keepalives_idle=180,
+        keepalives_idle=3600,
         connect_timeout=0 
     )
 
