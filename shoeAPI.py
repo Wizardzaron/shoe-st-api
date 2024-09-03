@@ -39,9 +39,12 @@ def shoeimages_get():
     # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
     global conn
     if not conn or conn is None:
-        connect_to_database()
+        print("We think connection is established")
         if conn is None:
+            print("Connection sill isn't established")
             return jsonify({"message": "No connection"}), 503
+        else:
+            print("Connection successfully established")
 
     cur = conn.cursor()
     with app.app_context():
