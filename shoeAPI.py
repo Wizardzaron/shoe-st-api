@@ -1,11 +1,21 @@
 from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response, current_app, jsonify
 import psycopg2
 import os
+from flask_apscheduler import APScheduler
 
 app = Flask(__name__)
 
 conn = None
 
+sched = APScheduler()
+
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+app.config.from_object(Config())
+
+sched.init_app(app)
+sched.start()
 
 def connect_to_database():
 
@@ -39,29 +49,36 @@ def allshoedata_get():
         
     cur = conn.cursor()
     print("We've got a cursor")
+    with app.app_context():
 
-    try:
+        try:
 
-        getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name, i.shoe_id, i.image_id, i.image_url
-        FROM shoe AS sd, brand AS b, image AS i
-        WHERE i.main_image = 1 AND i.shoe_id = sd.id AND sd.brand_id = b.brand_id'''
-        cur.execute(getData)
-        msg = jsonify("Successfully Executed")
-        print("Cursor Executed")
+            getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name, i.shoe_id, i.image_id, i.image_url
+            FROM shoe AS sd, brand AS b, image AS i
+            WHERE i.main_image = 1 AND i.shoe_id = sd.id AND sd.brand_id = b.brand_id'''
+            cur.execute(getData)
+            msg = jsonify("Successfully Executed")
+            print("Cursor Executed")
 
-    except Exception as e:
-        msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
-        # used to reset connection after bad query transaction
-        # conn.rollback()
-        return jsonify(msg)
+        except Exception as e:
+
+            msg = 'Query Failed: %s\nError: %s' % (getData, str(e))
+            # used to reset connection after bad query transaction
+            # conn.rollback()
+            return jsonify(msg)
+
+    # finally:
+    #     conn.close()
+        #need to do because conn still has a value
+        # conn = None     
 
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
-    conn = None
+
     return msg
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    sched.add_job(id='deletePasscode',func=allshoedata_get, trigger='interval', minute=1)
     app.run(host='0.0.0.0', port=port)
