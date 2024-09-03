@@ -219,12 +219,16 @@ def itemdata_post():
         msg = 'Query Failed: %s\nError: %s' % (insertItemData, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = jsonify('Trying to retrieve session')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
-    conn.close()
     return msg
 
 @app.route('/cartitems', methods=['GET'])
@@ -256,13 +260,17 @@ def itemdata_get():
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (getItem, str(err))
         return jsonify(msg)
+   
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
 
     msg = make_response(jsonify(shoeObjItem))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
-    conn.close()
     return msg
 
 
@@ -288,12 +296,16 @@ def cartdata_get():
         msg = 'Query Failed: %s\nError: %s' % (getCartItem, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(customerCartData))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
-    conn.close()
     return msg
 
 @app.route('/cartdataremoved', methods=['DELETE'])
@@ -317,12 +329,16 @@ def cartdata_delete():
         msg = 'Query Failed: %s\nError: %s' % (deleteCustomerCart, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = jsonify('Cart Deleted')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'  
     
-    conn.close()
     return msg
 
 @app.route('/cartitemid', methods=['GET'])
@@ -347,12 +363,16 @@ def cartitemid_get():
         msg = 'Query Failed: %s\nError: %s' % (cartId, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(cartObjId))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
 
-    conn.close() 
     return msg
 
 @app.route('/cartitemremoved', methods=['DELETE'])
@@ -378,12 +398,16 @@ def cartitem_delete():
         msg = 'Query Failed: %s\nError: %s' % (deleteCartItem, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = jsonify('Cart Item Deleted')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
 
-    conn.close()
     return msg
 
 @app.route('/checkshippingaddress', methods=['GET'])
@@ -412,11 +436,15 @@ def shippingaddress_check():
         msg = 'Query Failed: %s\nError: %s' % (getAddress, str(err))
         return jsonify(msg) 
     
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+        
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
     
-    conn.close()
     return msg
     
 # @app.route('/checkusername', methods=['GET'])
@@ -481,7 +509,11 @@ def password_change():
         msg = 'Query Failed: %s\nError: %s' % (changePass, str(e))
         return jsonify(msg)
     
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None     
+    
     return jsonify("Password changed sucessfully")
 
 #check
@@ -548,13 +580,17 @@ def passwordcode_check():
         msg = 'Query Failed: %s\nError: %s' % (getPasscode, str(err))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
 
     print(msg)
     
-    conn.close()
     return msg
 
 #check
@@ -594,12 +630,16 @@ def sendemail_send():
     except Exception as err:
         pass
     
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+    
     response = jsonify({"code": code})
     response.headers['Access-Control-Allow-Credentials'] = 'true'
     response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     print(response)
     
-    conn.close()
     return response
 
     
@@ -699,12 +739,16 @@ def allsizes_get():
 
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(shoeObjSize))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
     
-    conn.close()
     return msg
     
 #check
@@ -732,12 +776,16 @@ def shoeimages_get():
         # conn.rollback()
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
 @app.route('/allshoecolors', methods=['GET'])
 def allshoecolors_get():
@@ -782,12 +830,15 @@ def allshoecolors_get():
         msg = 'Query Failed: %s\nError: %s' % (getColors, str(e))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
     msg = make_response(jsonify(organizedColors))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
 
 #in postgresql if you want to use GROUP BY it needs to be applied to all attributes
@@ -840,12 +891,16 @@ def allshoes_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(brandObjects))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
     
     
@@ -878,12 +933,16 @@ def mainimages_get():
         # conn.rollback()
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
 
 #check?
@@ -939,12 +998,16 @@ def differentshoecolors_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(rows))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return rows
 
 #check?
@@ -974,12 +1037,16 @@ def allshoedata_get():
         # conn.rollback()
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(shoeObjList))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
 
 #check
@@ -1022,12 +1089,16 @@ def shoedata_get():
         msg = 'Query Failed: %s\nError: %s' % (getSizes, str(e))
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     msg = make_response(jsonify(shoeObj))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
 
-    conn.close()
     return msg
 
 
@@ -1061,7 +1132,11 @@ def shoebrand_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+        
     return rows
 
 # @app.route('/search', methods=['GET'])
@@ -1146,6 +1221,11 @@ def login():
         conn.close()
         return jsonify(msg)
 
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
 @app.route('/newquantity', methods=['PATCH'])
 def newquantity_patch():
     
@@ -1171,7 +1251,12 @@ def newquantity_patch():
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (updateQuantity, str(e))
         return jsonify(msg)
-    conn.close()
+
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     return msg
 
 @app.route('/totalcost', methods=['GET'])
@@ -1200,7 +1285,11 @@ def totalcost_get():
         msg = str(e)
         return jsonify(msg)
 
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     return str(msg)
 
 
@@ -1245,7 +1334,11 @@ def userdata_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     return rows
 
 
@@ -1278,7 +1371,11 @@ def all_userdata_get():
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
         return jsonify(msg)
 
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
     return rows
 
 
@@ -1320,9 +1417,11 @@ def order_post():
         return jsonify(msg)       
 
 
-    # finally:
-    #     cur.close()
-    conn.close()
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+        
     return jsonify('order created successfully')
 
 # @app.route('/setcookie', methods=['GET'])
@@ -1384,6 +1483,8 @@ def getlogin():
         t = jsonify(loggedin=s, id=i)
         print(t)
         conn.close()
+        # need to do because conn still has a value
+        conn = None 
         return t
     else:
         # used to create session loggedin just in case the cookie doesn't exist yet
@@ -1394,6 +1495,8 @@ def getlogin():
         t = jsonify(loggedin=s)
         print(t)
         conn.close()
+        # need to do because conn still has a value
+        conn = None 
         return t
 
 
@@ -1418,6 +1521,7 @@ def logout():
     else:
         t = '{' + f'"Signout": "Failure"' + '}'
     conn.close()
+    conn = None
     return t
 
 
@@ -1504,8 +1608,9 @@ def signup_post():
         conn.close()
         return jsonify(msg)
     finally:
-        cur.close()
-    conn.close()
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
     return msg
 
 
