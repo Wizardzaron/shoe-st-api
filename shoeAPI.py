@@ -44,6 +44,7 @@ def shoeimages_get():
             print("We think connection is established")
             if conn is None:
                 print("Connection sill isn't established")
+                print("Shoe2")
                 return jsonify({"message": "No connection"}), 503
             else:
                 print("Connection successfully established")
@@ -86,6 +87,7 @@ def allshoedata_get():
             print("We think connection is established")
             if conn is None:
                 print("Connection sill isn't established")
+                print("shoe1")
                 return jsonify({"message": "No connection"}), 503
             else:
                 print("Connection successfully established")
