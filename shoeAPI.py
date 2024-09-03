@@ -36,18 +36,19 @@ def connect_to_database():
 @app.route('/shoeimages', methods=['GET'])
 def shoeimages_get():
 
-    # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
-    global conn
-    if not conn or conn is None:
-        print("We think connection is established")
-        if conn is None:
-            print("Connection sill isn't established")
-            return jsonify({"message": "No connection"}), 503
-        else:
-            print("Connection successfully established")
-
-    cur = conn.cursor()
     with app.app_context():
+
+        # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
+        global conn
+        if not conn or conn is None:
+            print("We think connection is established")
+            if conn is None:
+                print("Connection sill isn't established")
+                return jsonify({"message": "No connection"}), 503
+            else:
+                print("Connection successfully established")
+
+        cur = conn.cursor()
         try:
 
             getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
@@ -76,22 +77,22 @@ def shoeimages_get():
 
 @app.route("/allshoedata", methods=["GET"])
 def allshoedata_get():
-    global conn
-    if not conn or conn is None:
-        print("Esatablishing connection")
-        connect_to_database()
-        print("We think connection is established")
-        if conn is None:
-            print("Connection sill isn't established")
-            return jsonify({"message": "No connection"}), 503
-        else:
-            print("Connection successfully established")
-        
-        
-    cur = conn.cursor()
-    print("We've got a cursor")
     with app.app_context():
 
+        global conn
+        if not conn or conn is None:
+            print("Esatablishing connection")
+            connect_to_database()
+            print("We think connection is established")
+            if conn is None:
+                print("Connection sill isn't established")
+                return jsonify({"message": "No connection"}), 503
+            else:
+                print("Connection successfully established")
+            
+            
+        cur = conn.cursor()
+        print("We've got a cursor")
         try:
 
             getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name, i.shoe_id, i.image_id, i.image_url
