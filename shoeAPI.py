@@ -60,6 +60,10 @@ def shoeimages_get():
             # used to reset connection after bad query transaction
             # conn.rollback()
             return jsonify(msg)
+        finally:
+            conn.close()
+            # need to do because conn still has a value
+            conn = None 
 
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -104,10 +108,10 @@ def allshoedata_get():
             # conn.rollback()
             return jsonify(msg)
 
-    # finally:
-    #     conn.close()
-        #need to do because conn still has a value
-        # conn = None     
+        finally:
+            conn.close()
+            # need to do because conn still has a value
+            conn = None     
 
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
