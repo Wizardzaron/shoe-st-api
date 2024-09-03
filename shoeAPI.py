@@ -33,6 +33,40 @@ def connect_to_database():
         connect_timeout=0 
     )
 
+@app.route('/shoeimages', methods=['GET'])
+def shoeimages_get():
+
+    # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+    with app.app_context():
+        try:
+
+            getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
+            cur.execute(getImage)
+            msg = jsonify("Successfully Executed")
+            print("Cursor Executed")
+
+        except Exception as e:
+            msg = 'Query Failed: %s\nError: %s' % (getImage, str(e))
+            # used to reset connection after bad query transaction
+            # conn.rollback()
+            return jsonify(msg)
+
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    conn.close()
+    return msg
+
+
+
 @app.route("/allshoedata", methods=["GET"])
 def allshoedata_get():
     global conn
@@ -81,4 +115,5 @@ def allshoedata_get():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     sched.add_job(id='deletePasscode',func=allshoedata_get, trigger='interval', minutes=1)
+    sched.add_job(id='deletePasscode',func=shoeimages_get, trigger='interval', minutes=2)
     app.run(host='0.0.0.0', port=port)
