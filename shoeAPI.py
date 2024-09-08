@@ -48,13 +48,12 @@ def connect_to_database():
 
     global conn
 
+    #learn how to connect with URL
+
     conn = psycopg2.connect(
-        host=os.environ.get('DB_HOST'),
-        port=os.environ.get('DB_PORT',5432),
-        dbname=os.environ.get('DB_NAME'),
-        user=os.environ.get('DB_USER'),
-        password=os.environ.get('DB_PASS'),
-        #need to figure out units
+        os.environ.get('DATABASE_URL'),
+        
+        #units are in seconds
         keepalives_idle=180,
         connect_timeout=2 
     )
