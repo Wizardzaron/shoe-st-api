@@ -72,6 +72,7 @@ def deletePasscode():
     cur.execute(changePass)
     conn.commit()
 
+#The Simple Mail Transfer Protocol (SMTP) is a technical standard for transmitting electronic mail (email) over a network.
 
 def sendEmail(username, code, customerObjEmail):
     
@@ -79,7 +80,7 @@ def sendEmail(username, code, customerObjEmail):
     PORT = 587
     FROM_EMAIL = "test.t94714808@gmail.com"
     TO_EMAIL = customerObjEmail['email']
-    PASSWORD = os.environ.get('PASSWORD_A')
+    PASSWORD = os.environ.get('SENDER_PASSWORD')
 
     MESSAGE = "From: " + FROM_EMAIL + "\r\n" 
     MESSAGE += "To: " + TO_EMAIL + "\r\n"
@@ -93,11 +94,16 @@ def sendEmail(username, code, customerObjEmail):
 
     s = smtplib.SMTP(HOST, PORT)
 
+    #elho() tells the server that the user is a SMTP client
     status_code, response = s.ehlo()
     print(f"[*] Echoing the server: {status_code} {response}")
 
+
+    #StartTLS is a protocol command used to inform the email server that the email client wants to upgrade 
+    # from an insecure connection to a secure one using TLS or SSL. 
     status_code, response = s.starttls()
     print(f"[*] Starting tls connection: {status_code} {response}")
+
 
     status_code, response = s.login(FROM_EMAIL, PASSWORD)
     print(f"[*] Logging in: {status_code} {response}")
