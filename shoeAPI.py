@@ -1473,13 +1473,13 @@ def getlogin():
 
     # needed to include elif in case the user didn't close down their browser window and wanted to keep using the site
 
-    print(str(session))
+    print(str(session['loggedin']))
     # if session['loggedin'] == 'False':
     #     s = str(session)
     #     t = jsonify(loggedin=s)
     #     print(t)
     #     return t
-    if 'loggedin' in session and session['loggedin'] == True:
+    if 'loggedin' in session and session['loggedin'] == 'True':
 
         s = str(session['loggedin'])
         i = session['id']
