@@ -1473,7 +1473,6 @@ def getlogin():
 
     # needed to include elif in case the user didn't close down their browser window and wanted to keep using the site
 
-    print(str(session['loggedin']))
     # if session['loggedin'] == 'False':
     #     s = str(session)
     #     t = jsonify(loggedin=s)
