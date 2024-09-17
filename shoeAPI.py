@@ -1,5 +1,4 @@
 # import psycopg2
-import sqlite3
 import os
 from flask import Flask, render_template, request, redirect, url_for, session, abort, make_response, current_app, jsonify
 from datetime import date, datetime, timedelta
@@ -197,7 +196,7 @@ def itemdata_post():
     
     print(size_id)
     print("Testers")    
-    customer_id = session['id']
+    customer_id = int(session['id'])
 
     cart_id = 0
     try:
@@ -246,7 +245,7 @@ def itemdata_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    customer_id = session['id']
+    customer_id = int(session['id'])
 
     try:
         getItem = '''
@@ -290,7 +289,7 @@ def cartdata_get():
 
     cur = conn.cursor()
 
-    customer_id = session['id']
+    customer_id = int(session['id'])
 
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
@@ -425,7 +424,7 @@ def shippingaddress_check():
             return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
-    customer_id = session['id']
+    customer_id = int(session['id'])
     msg = jsonify(1)
 
     
