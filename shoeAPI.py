@@ -195,7 +195,8 @@ def itemdata_post():
     #get cart id (create a cart if needed)
     
     print(size_id)
-    print("Testers")    
+    print("Testers")
+    print(int(session['id']))    
     customer_id = int(session['id'])
 
     cart_id = 0
