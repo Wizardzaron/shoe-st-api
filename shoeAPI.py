@@ -1266,6 +1266,7 @@ def newquantity_patch():
 
 @app.route('/totalcost', methods=['GET'])
 def totalcost_get():
+    print("arrived at total cost endpoint")
     global conn
     if not conn or conn is None:
         connect_to_database()
@@ -1273,6 +1274,7 @@ def totalcost_get():
             return jsonify({"message": "No connection"}), 503
     msg = 0
     try:
+        print("doing total cost calculation")
         arrayOfprice = request.args.get("prices")
         splitPrice = arrayOfprice.split(',')
         prices = [int(price) for price in splitPrice] 
