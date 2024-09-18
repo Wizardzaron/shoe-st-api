@@ -196,8 +196,8 @@ def itemdata_post():
     
     print(size_id)
     print("Testers")
-    print(int(session['id']))    
-    customer_id = int(session['id'])
+    print(session['id'])
+    customer_id = session['id']
 
     cart_id = 0
     try:
@@ -246,7 +246,7 @@ def itemdata_get():
             return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
-    customer_id = int(session['id'])
+    customer_id = session['id']
 
     try:
         getItem = '''
@@ -290,7 +290,7 @@ def cartdata_get():
 
     cur = conn.cursor()
 
-    customer_id = int(session['id'])
+    customer_id = session['id']
 
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
@@ -425,7 +425,7 @@ def shippingaddress_check():
             return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
-    customer_id = int(session['id'])
+    customer_id = session['id']
     msg = jsonify(1)
 
     
