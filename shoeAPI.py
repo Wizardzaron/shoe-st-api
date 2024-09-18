@@ -1198,16 +1198,16 @@ def login():
 
         getId = '''SELECT id FROM customer WHERE username = %s AND CAST (passwd AS TEXT) = %s'''
         cur.execute(getId, [username, encrpytedPassword])
-        id = cur.fetchone()
+        retrieved_id = cur.fetchone()
 
         # sessions carry data over the website
         session['loggedin'] = 'True'
 
         session['username'] = username
 
-        # need to do id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple
+        # need to do retrieved_id[0] because even though their is only one id number we are retrieving it's still wrapped in a tuple
         # and needs to be removed
-        session['id'] = str(id[0])
+        session['id'] = str(retrieved_id[0])
 
         # print("Id: ", id)
         print("session id does exist in session: ", session.get('id'))
