@@ -430,7 +430,7 @@ def shippingaddress_check():
 
     
     try:
-        getAddress = """SELECT country,city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
+        getAddress = """SELECT city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
         cur.execute(getAddress,[customer_id])
         addressObj = fetchObjectFromCursor(cur)
         for index in addressObj:
