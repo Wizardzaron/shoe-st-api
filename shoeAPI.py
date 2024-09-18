@@ -426,7 +426,7 @@ def shippingaddress_check():
     
     cur = conn.cursor()
     customer_id = session['id']
-    msg = "1"
+    msg = 1
     
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
@@ -434,7 +434,7 @@ def shippingaddress_check():
         addressObj = fetchObjectFromCursor(cur)
         for index in addressObj:
             if (addressObj[index] is None):
-                msg = "0"
+                msg = 0
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (getAddress, str(err))
@@ -1607,6 +1607,46 @@ def signup_post():
     finally:
         conn.close()
         # need to do because conn still has a value
+        conn = None 
+    return msg
+
+@app.route('/updateshippingaddress', methods=['PATCH'])
+def shippingaddress_patch():
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+
+    cur = conn.cursor()
+
+
+    msg = jsonify('Query inserted successfully')
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+
+    data = request.json
+
+    city = data.get('city')
+    state = data.get('state')
+
+    if "id" not in session:
+        msg = ({"message": "User could not be found due to id returning none"})
+        return jsonify(msg)
+
+    id = session.get('id')
+    print("id + ", id)
+    
+    try:
+        updateInfo = '''SELECT customer SET state = %s, city = %s WHERE id = %s'''
+        cur.execute(updateInfo, [state, city, id])
+        conn.commit()
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (updateInfo, str(err))
+        return jsonify(msg)
+    finally:
+        conn.close()
         conn = None 
     return msg
 
