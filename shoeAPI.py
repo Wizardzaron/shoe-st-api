@@ -444,7 +444,7 @@ def shippingaddress_check():
         conn.close()
         # need to do because conn still has a value
         conn = None 
-        
+   
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
@@ -1639,7 +1639,7 @@ def shippingaddress_patch():
     print("id + ", id)
     
     try:
-        updateInfo = '''SELECT customer SET state = %s, city = %s WHERE id = %s'''
+        updateInfo = '''UPDATE customer SET state = %s, city = %s WHERE id = %s'''
         cur.execute(updateInfo, [state, city, id])
         conn.commit()
     except Exception as err:
