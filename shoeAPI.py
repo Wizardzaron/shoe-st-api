@@ -1277,10 +1277,10 @@ def totalcost_get():
         print("doing total cost calculation")
         arrayOfprice = request.args.get("prices")
         splitPrice = arrayOfprice.split(',')
-        prices = [int(price) for price in splitPrice] 
+        prices = [float(price) for price in splitPrice] 
         arrayOfQuantity = request.args.get("quantity")
         splitQuantity = arrayOfQuantity.split(',')
-        quantitys = [int(quantity) for quantity in splitQuantity] 
+        quantitys = [float(quantity) for quantity in splitQuantity] 
 
         for index in range(len(prices)):
             msg += prices[index] * quantitys[index]        
