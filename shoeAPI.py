@@ -426,8 +426,7 @@ def shippingaddress_check():
     
     cur = conn.cursor()
     customer_id = session['id']
-    msg = 1
-
+    msg = "1"
     
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
@@ -435,7 +434,7 @@ def shippingaddress_check():
         addressObj = fetchObjectFromCursor(cur)
         for index in addressObj:
             if (addressObj[index] is None):
-                msg = 0
+                msg = "0"
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (getAddress, str(err))
