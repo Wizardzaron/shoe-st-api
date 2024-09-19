@@ -428,6 +428,8 @@ def shippingaddress_check():
     customer_id = session['id']
     msg = 1
     
+    print("I got the customer id: " + customer_id)
+    
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
         cur.execute(getAddress,[customer_id])
