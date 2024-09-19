@@ -194,10 +194,8 @@ def itemdata_post():
     size_id = data.get('size_id')
     #get cart id (create a cart if needed)
     
-    print(size_id)
-    print("Testers")
-    print(session['id'])
     customer_id = session['id']
+    print("/cartitem: customer: ", customer_id, " session: ", session['id'], " size_id: ", size_id)
 
     cart_id = 0
     try:
@@ -427,9 +425,7 @@ def shippingaddress_check():
     cur = conn.cursor()
     customer_id = session['id']
     msg = jsonify({"addressPresent": 1})
-    
-    print("I got the customer id: " + customer_id)
-    
+        
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode FROM customer WHERE id = %s"""
         cur.execute(getAddress,[customer_id])
@@ -446,9 +442,7 @@ def shippingaddress_check():
         conn.close()
         # need to do because conn still has a value
         conn = None 
-   
-    print("about to return message: ", msg)
-   
+      
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
