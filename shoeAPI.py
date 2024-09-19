@@ -426,7 +426,7 @@ def shippingaddress_check():
     
     cur = conn.cursor()
     customer_id = session['id']
-    msg = 1
+    msg = jsonify({"addressPresent": 1})
     
     print("I got the customer id: " + customer_id)
     
@@ -436,7 +436,7 @@ def shippingaddress_check():
         addressObj = fetchObjectFromCursor(cur)
         for index in addressObj:
             if (addressObj[index] is None):
-                msg = 0
+                msg = jsonify({"addressPresent": 0})
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (getAddress, str(err))
@@ -451,7 +451,7 @@ def shippingaddress_check():
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
     
-    return jsonify(msg)
+    return msg
     
 # @app.route('/checkusername', methods=['GET'])
 # def username_check():
