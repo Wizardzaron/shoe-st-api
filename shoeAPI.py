@@ -447,6 +447,8 @@ def shippingaddress_check():
         # need to do because conn still has a value
         conn = None 
    
+    print("about to return message: ", msg)
+   
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
