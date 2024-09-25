@@ -478,7 +478,8 @@ def shippingaddress_get():
     msg = jsonify(addressObj)
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'  
+    return msg 
     
 # @app.route('/checkusername', methods=['GET'])
 # def username_check():
