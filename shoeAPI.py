@@ -475,6 +475,8 @@ def shippingaddress_get():
         # need to do because conn still has a value
         conn = None 
         
+    print(addressObj)
+        
     msg = jsonify(addressObj)
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
