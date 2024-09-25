@@ -449,6 +449,37 @@ def shippingaddress_check():
     
     return msg
     
+@app.route('/getshippingaddress', methods=['GET'])
+def shippingaddress_get():
+    
+    global conn
+    if not conn or conn is None:
+        connect_to_database()
+        if conn is None:
+            return jsonify({"message": "No connection"}), 503
+    
+    cur = conn.cursor()
+    customer_id = session['id']    
+    
+    try:
+        getShippingAddress = """SELECT city,state,streetaddress,zipcode,email FROM customer WHERE id = %s"""
+        cur.execute(getShippingAddress,[customer_id])
+        addressObj = fetchObjectFromCursor(cur)
+    
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (getShippingAddress, str(err))
+        return jsonify(msg) 
+    
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+        
+    msg = jsonify(addressObj)
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
+    
 # @app.route('/checkusername', methods=['GET'])
 # def username_check():
 
