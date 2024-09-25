@@ -1401,7 +1401,7 @@ def order_post():
 
     try:
 
-        insertNewOrder = """INSERT INTO orders (orderdate,total) VALUES (%s,%s)"""
+        insertNewOrder = """INSERT INTO orders (order_date,total) VALUES (%s,%s)"""
         cur.execute(insertNewOrder, [dateoforder, total])
         conn.commit()
 
@@ -1411,7 +1411,7 @@ def order_post():
         return jsonify(msg)
 
     try:
-        updateCustomerOrder = """UPDATE customer SET orderid = %s WHERE id = %s """
+        updateCustomerOrder = """UPDATE customer SET order_id = %s WHERE id = %s """
         cur.execute(updateCustomerOrder, [dateoforder, id])
         conn.commit()
 
