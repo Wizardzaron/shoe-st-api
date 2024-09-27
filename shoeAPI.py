@@ -16,6 +16,7 @@ import smtplib
 import jwt
 import logging
 import hashlib
+import json
 
 app = Flask(__name__)
 
@@ -191,6 +192,8 @@ def itemdata_post():
 
     data = request.json
 
+    print("Cart item request data: " + json.dumps(data))
+
     size_id = data.get('size_id')
     #get cart id (create a cart if needed)
     
@@ -209,7 +212,7 @@ def itemdata_post():
             cur.execute(insertCustomerCart, [customer_id])
             cart_id = cur.lastrowid()
     except Exception as err:
-        msg = 'Query Failed: %s\nError: %s' % (getCartItem, str(err))
+        msg = 'Select Query Failed: %s\nError: %s' % (getCartItem, str(err))
         return jsonify(msg)
     print(cart_id)
     
@@ -219,7 +222,7 @@ def itemdata_post():
         cur.execute(insertItemData, [cart_id, size_id])
         conn.commit()
     except Exception as err:
-        msg = 'Query Failed: %s\nError: %s' % (insertItemData, str(err))
+        msg = 'Insert Query Failed: %s\nError: %s' % (insertItemData, str(err))
         return jsonify(msg)
 
     finally:
