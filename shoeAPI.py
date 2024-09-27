@@ -1587,6 +1587,8 @@ def signup_post():
     cur.execute(getCountByUsername, [username])
     countOfUsername = cur.fetchone()
 
+    print("count of identical names: " + countOfUsername[0])
+
     if countOfUsername[0] != 0:
         return jsonify('Username already exists.')
 
