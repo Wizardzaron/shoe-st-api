@@ -32,8 +32,6 @@ app.config['SESSION_FILE_DIR'] = "."
 
 app.permanent_session_lifetime = timedelta(minutes=120)
 
-conn = None
-
 sched = APScheduler()
 
 class Config:
@@ -46,8 +44,6 @@ sched.start()
 
 def connect_to_database():
 
-    global conn
-
     #learn how to connect with URL
 
     conn = psycopg2.connect(
@@ -57,15 +53,16 @@ def connect_to_database():
         keepalives_idle=180,
         connect_timeout=2 
     )
+    
+    return conn
+    
     # conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
 def deletePasscode():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
     changePass = '''UPDATE customer SET temporarypasscode = null, codedate = null'''
@@ -166,9 +163,8 @@ def fetchObjectFromCursor(cursor):
 
 @app.route('/connect', methods=['GET'])
 def check_connection():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
+    
+    conn = connect_to_database()
     # connection = conn.closed
     # if (connection != 0):
     if conn is None:    
@@ -180,13 +176,11 @@ def check_connection():
 @app.route('/cartitem', methods=['POST'])
 def itemdata_post():
 
-    global conn
-    if not conn or conn is None:
-        print("Connection is not established")
-        connect_to_database()
-        if conn is None:
-            print("Unable to connect to database")
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        print("Unable to connect to database")
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
 
@@ -240,11 +234,10 @@ def itemdata_post():
 @app.route('/cartitems', methods=['GET'])
 def itemdata_get():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
     customer_id = session['id']
@@ -283,11 +276,10 @@ def itemdata_get():
 @app.route('/getcartdata', methods=['GET'])
 def cartdata_get():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -317,11 +309,10 @@ def cartdata_get():
 @app.route('/cartdataremoved', methods=['DELETE'])
 def cartdata_delete():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -350,11 +341,10 @@ def cartdata_delete():
 @app.route('/cartitemid', methods=['GET'])
 def cartitemid_get():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
     
@@ -384,11 +374,10 @@ def cartitemid_get():
 @app.route('/cartitemremoved', methods=['DELETE'])
 def cartitem_delete():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
     
@@ -419,11 +408,10 @@ def cartitem_delete():
 @app.route('/checkshippingaddress', methods=['GET'])
 def shippingaddress_check():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
     customer_id = session['id'] 
@@ -458,8 +446,8 @@ def shippingaddress_check():
 # @app.route('/checkusername', methods=['GET'])
 # def username_check():
 
-#     global conn
-#     if not conn or conn is None:
+#     
+#     conn = connect_to_database()
 #         connect_to_database()
 #         if conn is None:
 #             return jsonify({"message": "No connection"}), 503
@@ -492,11 +480,10 @@ def shippingaddress_check():
 @app.route('/passwordchange', methods=['GET', 'PATCH'])
 def password_change():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
             
@@ -528,11 +515,10 @@ def password_change():
 @app.route('/passwordcode', methods=['GET', 'PATCH'])
 def passwordcode_check():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -605,11 +591,10 @@ def passwordcode_check():
 @app.route('/sendemail', methods=['GET', 'PATCH'])
 def sendemail_send():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     
     cur = conn.cursor()
         
@@ -656,7 +641,7 @@ def sendemail_send():
 
 # @app.route('/updateshoe', methods=['PATCH'])
 # def shoedata_update():
-#     global conn
+#     
 #     #These 4 lines of code will ensure that the connection is always established, even if it's lost
 #     if not conn or conn.closed:
 #         connect_to_database()
@@ -687,7 +672,7 @@ def sendemail_send():
 
 # @app.route('/addshoe', methods=['POST'])
 # def shoedata_post():
-#     global conn
+#     
 #     if not conn or conn.closed:
 #         connect_to_database()
 #         if conn.closed:
@@ -727,11 +712,10 @@ def sendemail_send():
 #check
 @app.route('/allsizes', methods=['GET'])
 def allsizes_get():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()   
     
@@ -764,11 +748,10 @@ def allsizes_get():
 def shoeimages_get():
 
     # psycopg2 has the .closed attribute but not sqlite3 you need to use None in order to check for a closed connection
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -798,11 +781,10 @@ def shoeimages_get():
 @app.route('/allshoecolors', methods=['GET'])
 def allshoecolors_get():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     try:   
         #I need to find a way to retrieve all the shoe color image for the shoe but also make sure they are split into their 
@@ -853,11 +835,10 @@ def allshoecolors_get():
 
 @app.route('/allshoes', methods=['GET'])
 def allshoes_get():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     try:
 
@@ -916,11 +897,10 @@ def allshoes_get():
 @app.route('/allmainimages', methods=['GET'])
 def mainimages_get():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -957,11 +937,10 @@ def mainimages_get():
 @app.route('/differentshoecolors', methods=['GET'])
 def differentshoecolors_get():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
     try:
@@ -1022,11 +1001,10 @@ def differentshoecolors_get():
 #rename to shoebrands
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
@@ -1060,11 +1038,10 @@ def allshoedata_get():
 #check
 @app.route('/shoedata', methods=['GET'])
 def shoedata_get():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     try:
 
@@ -1112,7 +1089,7 @@ def shoedata_get():
 
 @app.route('/shoebrand', methods=['GET'])
 def shoebrand_get():
-    global conn
+    
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -1159,11 +1136,10 @@ def shoebrand_get():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
     try:
@@ -1237,11 +1213,10 @@ def login():
 @app.route('/newquantity', methods=['PATCH'])
 def newquantity_patch():
     
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     try:
 
@@ -1270,11 +1245,10 @@ def newquantity_patch():
 @app.route('/totalcost', methods=['GET'])
 def totalcost_get():
     print("arrived at total cost endpoint")
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     msg = 0
     try:
         print("doing total cost calculation")
@@ -1305,7 +1279,7 @@ def totalcost_get():
 
 @app.route('/userdata', methods=['GET'])
 def userdata_get():
-    global conn
+    
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -1354,7 +1328,7 @@ def userdata_get():
 
 @app.route('/alluserdata', methods=['GET'])
 def all_userdata_get():
-    global conn
+    
     if not conn or conn.closed:
         connect_to_database()
         if conn.closed:
@@ -1391,11 +1365,10 @@ def all_userdata_get():
 
 @app.route('/ordercreate', methods=['POST', 'PATCH'])
 def order_post():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
     total = request.args.get('total')
@@ -1463,11 +1436,10 @@ def order_post():
 def getlogin():
 
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     msg = jsonify('Trying to retrieve session')
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -1513,11 +1485,10 @@ def getlogin():
 @app.route('/logout', methods=['GET'])
 def logout():
 
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     msg = jsonify('Query inserted successfully')
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
@@ -1536,11 +1507,11 @@ def logout():
 
 @app.route('/signup', methods=['POST'])
 def signup_post():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
+    
     cur = conn.cursor()
 
     data = request.json
@@ -1587,7 +1558,7 @@ def signup_post():
     cur.execute(getCountByUsername, [username])
     countOfUsername = cur.fetchone()
 
-    print("count of identical names: " + countOfUsername[0])
+    print("count of identical names: ", countOfUsername[0])
 
     if countOfUsername[0] != 0:
         return jsonify('Username already exists.')
@@ -1618,11 +1589,10 @@ def signup_post():
 
 @app.route('/updateshippingaddress', methods=['PATCH'])
 def shippingaddress_patch():
-    global conn
-    if not conn or conn is None:
-        connect_to_database()
-        if conn is None:
-            return jsonify({"message": "No connection"}), 503
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
 
