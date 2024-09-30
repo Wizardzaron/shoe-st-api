@@ -1364,6 +1364,32 @@ def all_userdata_get():
 
     return rows
 
+@app.route('/orderdelete', methods=['DELETE'])
+def order_delete():
+
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
+    cur = conn.cursor()
+
+    order_id = request.args.get('order_id')
+    
+    try:
+        
+        deleteOrder = """DELETE FROM orders WHERE order_id = %s"""
+        cur.execute(deleteOrder, [order_id])
+        conn.commit()
+        
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (deleteOrder, str(err))
+        conn.rollback()
+        return jsonify(msg)
+
+    finally:
+        conn.close()
+        conn = None 
+        
+    return jsonify('order created successfully')
 
 @app.route('/ordercreate', methods=['POST', 'PATCH'])
 def order_post():
@@ -1392,7 +1418,7 @@ def order_post():
         return jsonify(msg)
 
     try:
-        updateCustomerOrder = """UPDATE customer SET order_id = %s WHERE id = %s """
+        updateCustomerOrder = """UPDATE customer SET orderid = %s WHERE id = %s """
         cur.execute(updateCustomerOrder, [dateoforder, id])
         conn.commit()
 
