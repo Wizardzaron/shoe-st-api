@@ -246,7 +246,7 @@ def itemdata_get():
 
     try:
         getItem = '''
-            SELECT DISTINCT i.image_url, i.image_id ,sd.shoe_name,sd.id ,sd.price, sd.sex, sd.color, sz.size, sz.size_id, bd.brand_name, cts.cart_item_id, cts.quantity
+            SELECT DISTINCT i.image_url, i.image_id ,sd.shoe_name,sd.id ,sd.price, sd.sex, sd.color, sz.size, sz.size_id, bd.brand_name, ct.cart_id ,cts.cart_item_id, cts.quantity
             FROM image AS i, shoe AS sd, sizes as sz ,brand AS bd, cart AS ct, cartitems AS cts
             WHERE i.main_image = 1
             AND  ct.customer_id = %s
