@@ -197,7 +197,8 @@ def itemdata_post():
     cart_id = 0
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
-        cur.execute(getCartItem, (customer_id))
+        #passing a tuple instead of a list
+        cur.execute(getCartItem, (customer_id,))
         row = cur.fetchone()
         if row is not None:
             cart_id = row[0]
