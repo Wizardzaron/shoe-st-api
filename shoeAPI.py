@@ -197,15 +197,16 @@ def itemdata_post():
     cart_id = 0
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
-        #passing a tuple instead of a list
-        cur.execute(getCartItem, (customer_id,))
+        cur.execute(getCartItem, [customer_id])
         row = cur.fetchone()
         if row is not None:
             cart_id = row[0]
         else:
-            insertCustomerCart = """INSERT INTO cart (customer_id) VALUES (%s)"""
-            cur.execute(insertCustomerCart, [customer_id])
-            cart_id = cur.lastrowid()
+            #returning allows us to retrieve the values from the same query without needing to make a new one,
+            # In an INSERT, the data available to RETURNING is the row as it was inserted.
+            insertCustomerCart = """INSERT INTO cart (customer_id) VALUES (%s) RETURNING cart_id"""
+            cur.execute(insertCustomerCart, (customer_id,))
+            cart_id = cur.fetchone()[0]
     except Exception as err:
         msg = 'Select Query Failed: %s\nError: %s' % (getCartItem, str(err))
         return jsonify(msg)
