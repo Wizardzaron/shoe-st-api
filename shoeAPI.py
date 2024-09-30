@@ -188,7 +188,7 @@ def itemdata_post():
 
     print("Cart item request data: " + json.dumps(data))
 
-    size_id = data.get('size_id')
+    size_id = int(data.get('size_id'))
     #get cart id (create a cart if needed)
     
     customer_id = session['id']
