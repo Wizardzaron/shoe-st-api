@@ -1389,9 +1389,9 @@ def order_delete():
         conn.close()
         conn = None 
         
-    return jsonify('order created successfully')
+    return jsonify('order deleted successfully')
 
-@app.route('/ordercreate', methods=['POST', 'PATCH'])
+@app.route('/ordercreate', methods=['POST', 'PATCH', 'DELETE'])
 def order_post():
     
     conn = connect_to_database()
@@ -1400,6 +1400,7 @@ def order_post():
     cur = conn.cursor()
 
     total = request.args.get('total')
+    cart_id = request.args.get('cart_id')
 
     today = date.today()
     dateoforder = today
@@ -1426,6 +1427,15 @@ def order_post():
         msg = 'Query Failed: %s\nError: %s' % (updateCustomerOrder, str(err))
         conn.rollback()
         return jsonify(msg)       
+
+    try:
+        deleteCartItems = """DELETE FROM cartitems WHERE cart_id = %s"""
+        cur.execute(deleteCartItems, [cart_id])
+        conn.commit()
+        
+    except Exception as err:
+        msg = 'Query Failed: %s\nError: %s' % (deleteCartItems, str(err))
+        return jsonify(msg)
 
 
     finally:
