@@ -1409,8 +1409,9 @@ def order_post():
 
     try:
 
-        insertNewOrder = """INSERT INTO orders (order_date,total) VALUES (%s,%s)"""
+        insertNewOrder = """INSERT INTO orders (order_date,total) VALUES (%s,%s) RETURNING order_id"""
         cur.execute(insertNewOrder, [dateoforder, total])
+        order_id = cur.fetchone()[0]
         conn.commit()
 
     except Exception as err:
@@ -1420,7 +1421,7 @@ def order_post():
 
     try:
         updateCustomerOrder = """UPDATE customer SET orderid = %s WHERE id = %s """
-        cur.execute(updateCustomerOrder, [dateoforder, id])
+        cur.execute(updateCustomerOrder, [order_id, id])
         conn.commit()
 
     except Exception as err:
