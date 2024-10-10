@@ -861,24 +861,23 @@ def allshoes_get():
 
         cur.execute(getInfo)
         brandObjects = fetchObjectFromCursorAll(cur)
-        # print(shoeObj[{'brand_id'}])
-        # for brand in brandObjects:
-        #     brand_id = brand["brand_id"]
-        #     getImages = '''
-        #     SELECT
-        #         sd.brand_id, 
-        #         sd.id,
-        #         sd.price,
-        #         sd.color,
-        #         sd.color_order, 
-        #         i.image_id, 
-        #         i.image_url 
-        #     FROM shoe AS sd
-        #     JOIN image as i ON i.shoe_id = sd.id 
-        #     WHERE sd.brand_id = %s AND i.main_image = 1
-        #     ORDER BY sd.color_order'''
-        #     cur.execute(getImages,[brand_id])
-        #     brand["images"] = fetchObjectFromCursorAll(cur)
+        for brand in brandObjects:
+            brand_id = brand["brand_id"]
+            getImages = '''
+            SELECT
+                sd.brand_id, 
+                sd.id,
+                sd.price,
+                sd.color,
+                sd.color_order, 
+                i.image_id, 
+                i.image_url 
+            FROM shoe AS sd
+            JOIN image as i ON i.shoe_id = sd.id 
+            WHERE sd.brand_id = %s AND i.main_image = 1
+            ORDER BY sd.color_order'''
+            cur.execute(getImages,[brand_id])
+            brand["images"] = fetchObjectFromCursorAll(cur)
             
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
