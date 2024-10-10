@@ -847,13 +847,14 @@ def allshoes_get():
         #needed to include JOIN clause to stop cartesian product from returning duplicate values
         #need to fix the query to retrieve two distinct records
         getInfo = '''
-        SELECT 
+        SELECT DISTINCT ON 
+            (sd.brand_id)
+            b.brand_id,
             sd.sex, 
             sd.descript,
             sd.id, 
             sd.shoe_name,
-            b.brand_name, 
-            b.brand_id
+            b.brand_name 
         FROM shoe AS sd
         JOIN brand AS b ON b.brand_id = sd.brand_id
         ORDER BY b.brand_id '''
