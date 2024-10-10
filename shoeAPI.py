@@ -864,7 +864,7 @@ def allshoes_get():
         for brand in brandObjects:
             brand_id = brand["brand_id"]
             getImages = '''
-            SELECT DISTINCT ON
+            SELECT DISTINCT
                 sd.brand_id, 
                 sd.id,
                 sd.price,
