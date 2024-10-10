@@ -1563,6 +1563,8 @@ def signup_post():
     zipcode = data.get('zipcode')
     streetaddress = data.get('streetaddress')
     passwd = data.get('passwd')
+    city = data.get('city')
+    state = data.get('state')
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
@@ -1608,9 +1610,9 @@ def signup_post():
     # ready to insert into database
     try:
 
-        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+        insertNewUser = """INSERT INTO customer (email, firstname, lastname, passwd, streetaddress, username, zipcode, city, state) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
         cur.execute(insertNewUser, [
-                    email, firstname, lastname, encrpytedPassword, streetaddress, username, zipcode])
+                    email, firstname, lastname, encrpytedPassword, streetaddress, username, zipcode, city, state])
         conn.commit()
 
         msg = jsonify('Query inserted successfully')
