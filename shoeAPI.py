@@ -848,7 +848,7 @@ def allshoes_get():
         #need to fix the query to retrieve two distinct records
         getInfo = '''
         SELECT DISTINCT ON 
-            (sd.brand_id)
+            (b.brand_id)
             b.brand_id,
             sd.sex, 
             sd.descript,
