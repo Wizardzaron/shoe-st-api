@@ -845,6 +845,7 @@ def allshoes_get():
     try:
 
         #needed to include JOIN clause to stop cartesian product from returning duplicate values
+        #need to fix the query to retrieve two distinct records
         getInfo = '''
         SELECT 
             sd.sex, 
@@ -863,7 +864,7 @@ def allshoes_get():
         for brand in brandObjects:
             brand_id = brand["brand_id"]
             getImages = '''
-            SELECT 
+            SELECT DISTINCT ON
                 sd.brand_id, 
                 sd.id,
                 sd.price,
