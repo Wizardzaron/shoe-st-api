@@ -189,8 +189,7 @@ def itemdata_post():
     print("Cart item request data: " + json.dumps(data))
 
     size_id = int(data.get('size_id'))
-    #get cart id (create a cart if needed)
-    
+    url = data.get('url')    
     customer_id = session['id']
     print("/cartitem: customer: ", customer_id, " session: ", session['id'], " size_id: ", size_id)
 
@@ -229,7 +228,7 @@ def itemdata_post():
     msg = jsonify('Trying to retrieve session')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
     
     return msg
 
