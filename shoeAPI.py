@@ -186,10 +186,13 @@ def itemdata_post():
 
     data = request.json
 
+
+    url = os.environ.get('DATABASE_URL')
+
+
     print("Cart item request data: " + json.dumps(data))
 
     size_id = int(data.get('size_id'))
-    url = data.get('url')    
     customer_id = session['id']
     print("/cartitem: customer: ", customer_id, " session: ", session['id'], " size_id: ", size_id)
 
@@ -228,6 +231,13 @@ def itemdata_post():
     msg = jsonify('Trying to retrieve session')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    
+    #create a env for url
+    
+    #another method is to create a table for permitted urls
+    
+    #how to use http header to get domain name
+    
     msg.headers['Access-Control-Allow-Origin'] = url
     
     return msg
@@ -242,6 +252,9 @@ def itemdata_get():
 
     cur = conn.cursor()
     customer_id = session['id']
+
+    url = os.environ.get('DATABASE_URL')
+
 
     try:
         getItem = '''
@@ -269,7 +282,7 @@ def itemdata_get():
     msg = make_response(jsonify(shoeObjItem))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
     
     return msg
 
@@ -285,6 +298,8 @@ def cartdata_get():
     cur = conn.cursor()
 
     customer_id = session['id']
+
+    url = os.environ.get('DATABASE_URL')
 
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
@@ -303,7 +318,7 @@ def cartdata_get():
     msg = make_response(jsonify(customerCartData))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
     
     return msg
 
@@ -318,6 +333,8 @@ def cartdata_delete():
     cur = conn.cursor()
 
     customer_id = request.form.get('customer_id')
+
+    url = os.environ.get('DATABASE_URL')
 
     try:
         deleteCustomerCart = """DELETE FROM cart WHERE customer_id = %s"""
@@ -335,7 +352,7 @@ def cartdata_delete():
     msg = jsonify('Cart Deleted')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'  
+    msg.headers['Access-Control-Allow-Origin'] = url  
     
     return msg
 
@@ -351,6 +368,8 @@ def cartitemid_get():
     
     cart_id = request.form.get('cart_id')
     size_id = request.form.get('size_id')
+    
+    url = os.environ.get('DATABASE_URL')
     
     try:
         cartId = """SELECT cart_item_id FROM cartitems WHERE cart_id = %s AND size_id = %s"""
@@ -368,7 +387,7 @@ def cartitemid_get():
     msg = make_response(jsonify(cartObjId))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 
@@ -385,6 +404,7 @@ def cartitem_delete():
     data = request.json
 
     cart_item_id = data.get('cart_item_id')
+    url = os.environ.get('DATABASE_URL')
         
     try:
         deleteCartItem = """DELETE FROM cartitems WHERE cart_item_id = %s"""
@@ -402,7 +422,7 @@ def cartitem_delete():
     msg = jsonify('Cart Item Deleted')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
+    msg.headers['Access-Control-Allow-Origin'] = url     
 
     return msg
 
@@ -416,7 +436,10 @@ def shippingaddress_check():
     
     cur = conn.cursor()
     customer_id = session['id'] 
-           
+
+    url = os.environ.get('DATABASE_URL')
+
+
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode,email,firstname,lastname FROM customer WHERE id = %s"""
         cur.execute(getAddress,[customer_id])
@@ -439,7 +462,7 @@ def shippingaddress_check():
       
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'   
+    msg.headers['Access-Control-Allow-Origin'] = url 
     
     return msg
     
@@ -533,6 +556,7 @@ def passwordcode_check():
     
     msg = jsonify('False')
 
+    url = os.environ.get('DATABASE_URL')
     
     try:
         getPasscode = """SELECT temporarypasscode, codedate FROM customer WHERE username = %s"""
@@ -582,7 +606,7 @@ def passwordcode_check():
 
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'     
+    msg.headers['Access-Control-Allow-Origin'] = url    
 
     print(msg)
     
@@ -605,7 +629,8 @@ def sendemail_send():
     
     code = random.randrange(100000,999999)
     now = datetime.now()
-   
+
+    url = os.environ.get('DATABASE_URL')
                 
     try:
         getEmailItem = """SELECT EMAIL FROM customer WHERE username = %s"""
@@ -631,7 +656,7 @@ def sendemail_send():
     
     response = jsonify({"code": code})
     response.headers['Access-Control-Allow-Credentials'] = 'true'
-    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    response.headers['Access-Control-Allow-Origin'] = url
     print(response)
     
     return response
@@ -722,6 +747,10 @@ def allsizes_get():
     
     shoe_id = request.form.get('id')
     print(shoe_id)
+    
+    url = os.environ.get('DATABASE_URL')
+
+    
     try:
 
         getSize = '''SELECT size FROM sizes WHERE shoe_id = %s AND in_stock > 0'''
@@ -740,7 +769,7 @@ def allsizes_get():
     msg = make_response(jsonify(shoeObjSize))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
     
     return msg
     
@@ -755,6 +784,8 @@ def shoeimages_get():
         return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
+
+    url = os.environ.get('DATABASE_URL')
 
     try:
 
@@ -776,7 +807,7 @@ def shoeimages_get():
     msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 @app.route('/allshoecolors', methods=['GET'])
@@ -787,6 +818,9 @@ def allshoecolors_get():
     if conn is None:
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+    
+    url = os.environ.get('DATABASE_URL')
+    
     try:   
         #I need to find a way to retrieve all the shoe color image for the shoe but also make sure they are split into their 
         # respective shoes, and that they aren't the different images
@@ -828,7 +862,7 @@ def allshoecolors_get():
     msg = make_response(jsonify(organizedColors))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 
@@ -841,6 +875,9 @@ def allshoes_get():
     if conn is None:
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+    
+    url = os.environ.get('DATABASE_URL')
+    
     try:
 
         #needed to include JOIN clause to stop cartesian product from returning duplicate values
@@ -890,7 +927,7 @@ def allshoes_get():
     msg = make_response(jsonify(brandObjects))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
     
@@ -905,6 +942,8 @@ def mainimages_get():
         return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
+
+    url = os.environ.get('DATABASE_URL')
 
     try:
 
@@ -931,7 +970,7 @@ def mainimages_get():
     msg = make_response(jsonify(shoeObjImages))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 
@@ -945,6 +984,9 @@ def differentshoecolors_get():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
+    
+    url = os.environ.get('DATABASE_URL')
+    
     try:
 
         shoe_id = request.args.get('id')
@@ -995,7 +1037,7 @@ def differentshoecolors_get():
     msg = make_response(jsonify(rows))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return rows
 
@@ -1009,6 +1051,8 @@ def allshoedata_get():
         return jsonify({"message": "No connection"}), 503
 
     cur = conn.cursor()
+
+    url = os.environ.get('DATABASE_URL')
 
     try:
 
@@ -1033,7 +1077,7 @@ def allshoedata_get():
     msg = make_response(jsonify(shoeObjList))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 
@@ -1045,6 +1089,9 @@ def shoedata_get():
     if conn is None:
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+    
+    url = os.environ.get('DATABASE_URL')
+    
     try:
 
         shoe_id = request.args.get('id')
@@ -1084,7 +1131,7 @@ def shoedata_get():
     msg = make_response(jsonify(shoeObj))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     return msg
 
@@ -1144,12 +1191,13 @@ def login():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
+    url = os.environ.get('DATABASE_URL')
     try:
 
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = '*'
+        msg.headers['Access-Control-Allow-Origin'] = url
         msg.headers['Access-Control-Allow-Credentials'] = True
 
         username = request.args.get('username')
@@ -1220,11 +1268,13 @@ def newquantity_patch():
     if conn is None:
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+
+    url = os.environ.get('DATABASE_URL')    
     try:
 
         msg = jsonify('Quantity has been updated')
         msg.headers['Access-Control-Allow-Methods'] = 'PATCH'
-        msg.headers['Access-Control-Allow-Origin'] = '*'
+        msg.headers['Access-Control-Allow-Origin'] = url
 
         cartId = request.args.get("cart_item_id")
         quantity = request.args.get("newQuantity")
@@ -1288,11 +1338,14 @@ def userdata_get():
             return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     rows = []
+    
+    url = os.environ.get('DATABASE_URL')
+    
     try:
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
         msg.headers['Access-Control-Allow-Credentials'] = 'true'
-        msg.headers['Access-Control-Allow-Origin'] = '*'
+        msg.headers['Access-Control-Allow-Origin'] = url
 
         if "id" not in session:
             msg = ({"message": "User could not be found due to id returning none"})
@@ -1565,6 +1618,9 @@ def signup_post():
     city = data.get('city')
     state = data.get('state')
 
+    url = os.environ.get('DATABASE_URL')
+
+
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
         return jsonify("password must be between 4 and 255")
@@ -1617,7 +1673,7 @@ def signup_post():
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-        msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        msg.headers['Access-Control-Allow-Origin'] = url
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
@@ -1637,11 +1693,12 @@ def shippingaddress_patch():
 
     cur = conn.cursor()
 
+    url = os.environ.get('DATABASE_URL')
 
     msg = jsonify('Query inserted successfully')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
-    msg.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    msg.headers['Access-Control-Allow-Origin'] = url
 
     data = request.json
 
