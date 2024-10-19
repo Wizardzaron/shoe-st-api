@@ -908,6 +908,8 @@ def allshoes_get():
     
     url = os.environ.get('FRONTEND_URL')
     
+    print("Take a look")
+    
     try:
         response = checkURL(url)
         print("I'm in the checkURL function")
