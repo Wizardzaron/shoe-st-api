@@ -187,7 +187,7 @@ def itemdata_post():
     data = request.json
 
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
 
     print("Cart item request data: " + json.dumps(data))
@@ -253,7 +253,7 @@ def itemdata_get():
     cur = conn.cursor()
     customer_id = session['id']
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
 
     try:
@@ -299,7 +299,7 @@ def cartdata_get():
 
     customer_id = session['id']
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
@@ -334,7 +334,7 @@ def cartdata_delete():
 
     customer_id = request.form.get('customer_id')
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     try:
         deleteCustomerCart = """DELETE FROM cart WHERE customer_id = %s"""
@@ -369,7 +369,7 @@ def cartitemid_get():
     cart_id = request.form.get('cart_id')
     size_id = request.form.get('size_id')
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
         cartId = """SELECT cart_item_id FROM cartitems WHERE cart_id = %s AND size_id = %s"""
@@ -404,7 +404,7 @@ def cartitem_delete():
     data = request.json
 
     cart_item_id = data.get('cart_item_id')
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
         
     try:
         deleteCartItem = """DELETE FROM cartitems WHERE cart_item_id = %s"""
@@ -437,7 +437,7 @@ def shippingaddress_check():
     cur = conn.cursor()
     customer_id = session['id'] 
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
 
     try:
@@ -556,7 +556,7 @@ def passwordcode_check():
     
     msg = jsonify('False')
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
         getPasscode = """SELECT temporarypasscode, codedate FROM customer WHERE username = %s"""
@@ -630,7 +630,7 @@ def sendemail_send():
     code = random.randrange(100000,999999)
     now = datetime.now()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
                 
     try:
         getEmailItem = """SELECT EMAIL FROM customer WHERE username = %s"""
@@ -748,7 +748,7 @@ def allsizes_get():
     shoe_id = request.form.get('id')
     print(shoe_id)
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     
     try:
@@ -785,7 +785,7 @@ def shoeimages_get():
 
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     try:
 
@@ -819,7 +819,7 @@ def allshoecolors_get():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:   
         #I need to find a way to retrieve all the shoe color image for the shoe but also make sure they are split into their 
@@ -876,7 +876,7 @@ def allshoes_get():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
 
@@ -943,7 +943,7 @@ def mainimages_get():
 
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     try:
 
@@ -985,7 +985,7 @@ def differentshoecolors_get():
     cur = conn.cursor()
     rows = []
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
 
@@ -1052,7 +1052,7 @@ def allshoedata_get():
 
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     try:
 
@@ -1090,7 +1090,7 @@ def shoedata_get():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
 
@@ -1191,7 +1191,7 @@ def login():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     try:
 
         msg = jsonify('Query inserted successfully')
@@ -1269,7 +1269,7 @@ def newquantity_patch():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')    
+    url = os.environ.get('FRONTEND_URL')    
     try:
 
         msg = jsonify('Quantity has been updated')
@@ -1339,7 +1339,7 @@ def userdata_get():
     cur = conn.cursor()
     rows = []
     
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
     
     try:
         msg = jsonify('Query inserted successfully')
@@ -1618,7 +1618,7 @@ def signup_post():
     city = data.get('city')
     state = data.get('state')
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
 
     # password must be between 4 and 255
@@ -1693,7 +1693,7 @@ def shippingaddress_patch():
 
     cur = conn.cursor()
 
-    url = os.environ.get('DATABASE_URL')
+    url = os.environ.get('FRONTEND_URL')
 
     msg = jsonify('Query inserted successfully')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
