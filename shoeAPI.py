@@ -911,7 +911,7 @@ def allshoes_get():
     print("Take a look")
     
     try:
-        response = checkURL(url)
+        response = checkURL()
         print("I'm in the checkURL function")
         print(response)
         
