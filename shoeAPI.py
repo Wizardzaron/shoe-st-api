@@ -910,6 +910,7 @@ def allshoes_get():
     
     try:
         response = checkURL(url)
+        print("I'm in the checkURL function")
         print(response)
         
         
