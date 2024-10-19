@@ -910,6 +910,8 @@ def allshoes_get():
     
     try:
         response = checkURL(url)
+        print(response)
+        
         
         if not response:
             abort(403)     
