@@ -58,6 +58,27 @@ def connect_to_database():
     
     # conn = sqlite3.connect("shoe.db", check_same_thread=False)
 
+def checkURL():
+    
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
+    
+    cur = conn.cursor()
+    
+    FRONTEND = os.environ.get('FRONTEND_URL')
+    getUrl = '''SELECT * FROM validdomains'''
+    cur.execute(getUrl)
+
+    info = cur.fetchall()
+    for row in info:
+        if info[row] == FRONTEND:
+            return jsonify("True")
+
+
+
+    return jsonify("False")
+    
 def deletePasscode():
 
     conn = connect_to_database()
@@ -189,6 +210,15 @@ def itemdata_post():
 
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL(url)
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
 
     print("Cart item request data: " + json.dumps(data))
 
@@ -877,6 +907,17 @@ def allshoes_get():
     cur = conn.cursor()
     
     url = os.environ.get('FRONTEND_URL')
+    
+    try:
+        response = checkURL(url)
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
     
     try:
 
