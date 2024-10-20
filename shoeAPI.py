@@ -212,7 +212,7 @@ def itemdata_post():
     url = os.environ.get('FRONTEND_URL')
 
     try:
-        response = checkURL(url)
+        response = checkURL()
         
         if not response:
             abort(403)     
@@ -1088,7 +1088,6 @@ def differentshoecolors_get():
 
     return rows
 
-#check?
 #rename to shoebrands
 @app.route('/allshoedata', methods=['GET'])
 def allshoedata_get():
