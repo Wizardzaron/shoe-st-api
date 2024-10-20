@@ -72,7 +72,8 @@ def checkURL():
 
     info = cur.fetchall()
     for row in info:
-        if info[row] == FRONTEND:
+        print(row[0])
+        if row[0] == FRONTEND:
             return jsonify("True")
 
 
