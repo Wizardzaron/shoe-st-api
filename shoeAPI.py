@@ -286,6 +286,15 @@ def itemdata_get():
 
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
 
     try:
         getItem = '''
@@ -333,6 +342,16 @@ def cartdata_get():
     url = os.environ.get('FRONTEND_URL')
 
     try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
+    try:
         getCartItem = """SELECT cart_id FROM cart WHERE customer_id = %s"""
         cur.execute(getCartItem, [customer_id])
         customerCartData = fetchObjectFromCursor(cur)
@@ -368,6 +387,16 @@ def cartdata_delete():
     url = os.environ.get('FRONTEND_URL')
 
     try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
+    try:
         deleteCustomerCart = """DELETE FROM cart WHERE customer_id = %s"""
         cur.execute(deleteCustomerCart, [customer_id])
         conn.commit()
@@ -401,7 +430,17 @@ def cartitemid_get():
     size_id = request.form.get('size_id')
     
     url = os.environ.get('FRONTEND_URL')
-    
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+        
     try:
         cartId = """SELECT cart_item_id FROM cartitems WHERE cart_id = %s AND size_id = %s"""
         cur.execute(cartId, [cart_id, size_id])
@@ -436,7 +475,17 @@ def cartitem_delete():
 
     cart_item_id = data.get('cart_item_id')
     url = os.environ.get('FRONTEND_URL')
+
+    try:
+        response = checkURL()
         
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+            
     try:
         deleteCartItem = """DELETE FROM cartitems WHERE cart_item_id = %s"""
         cur.execute(deleteCartItem, [cart_item_id])
@@ -470,6 +519,15 @@ def shippingaddress_check():
 
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
 
     try:
         getAddress = """SELECT city,state,streetaddress,zipcode,email,firstname,lastname FROM customer WHERE id = %s"""
@@ -588,7 +646,17 @@ def passwordcode_check():
     msg = jsonify('False')
 
     url = os.environ.get('FRONTEND_URL')
-    
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+        
     try:
         getPasscode = """SELECT temporarypasscode, codedate FROM customer WHERE username = %s"""
         cur.execute(getPasscode, [username])
@@ -662,7 +730,17 @@ def sendemail_send():
     now = datetime.now()
 
     url = os.environ.get('FRONTEND_URL')
-                
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+                    
     try:
         getEmailItem = """SELECT EMAIL FROM customer WHERE username = %s"""
         cur.execute(getEmailItem, [username])
@@ -781,6 +859,15 @@ def allsizes_get():
     
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
     
     try:
 
@@ -819,6 +906,16 @@ def shoeimages_get():
     url = os.environ.get('FRONTEND_URL')
 
     try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
+    try:
 
         getImage = '''SELECT shoe_id, image_id, image_url FROM image'''
         cur.execute(getImage)
@@ -851,6 +948,16 @@ def allshoecolors_get():
     cur = conn.cursor()
     
     url = os.environ.get('FRONTEND_URL')
+    
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
     
     try:   
         #I need to find a way to retrieve all the shoe color image for the shoe but also make sure they are split into their 
@@ -908,12 +1015,9 @@ def allshoes_get():
     cur = conn.cursor()
     
     url = os.environ.get('FRONTEND_URL')
-    
-    print("Take a look")
-    
+        
     try:
         response = checkURL()
-        print("I'm in the checkURL function")
         print(response)
         
         
@@ -993,6 +1097,16 @@ def mainimages_get():
     url = os.environ.get('FRONTEND_URL')
 
     try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
+    try:
 
         # this a join
         getImage = '''
@@ -1033,7 +1147,17 @@ def differentshoecolors_get():
     rows = []
     
     url = os.environ.get('FRONTEND_URL')
-    
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+        
     try:
 
         shoe_id = request.args.get('id')
@@ -1101,6 +1225,16 @@ def allshoedata_get():
     url = os.environ.get('FRONTEND_URL')
 
     try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
+    try:
 
         getData = '''SELECT sd.id, sd.color, sd.sex, sd.price, sd.descript, sd.shoe_name, b.brand_id,b.brand_name, i.shoe_id, i.image_id, i.image_url
         FROM shoe AS sd, brand AS b, image AS i
@@ -1137,7 +1271,17 @@ def shoedata_get():
     cur = conn.cursor()
     
     url = os.environ.get('FRONTEND_URL')
-    
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+        
     try:
 
         shoe_id = request.args.get('id')
@@ -1238,6 +1382,18 @@ def login():
     cur = conn.cursor()
 
     url = os.environ.get('FRONTEND_URL')
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+
+
     try:
 
         msg = jsonify('Query inserted successfully')
@@ -1315,7 +1471,18 @@ def newquantity_patch():
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
 
-    url = os.environ.get('FRONTEND_URL')    
+    url = os.environ.get('FRONTEND_URL')
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)    
+      
     try:
 
         msg = jsonify('Quantity has been updated')
@@ -1386,7 +1553,17 @@ def userdata_get():
     rows = []
     
     url = os.environ.get('FRONTEND_URL')
-    
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+        
     try:
         msg = jsonify('Query inserted successfully')
         msg.headers['Access-Control-Allow-Methods'] = 'GET'
@@ -1666,6 +1843,15 @@ def signup_post():
 
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
@@ -1741,6 +1927,16 @@ def shippingaddress_patch():
 
     url = os.environ.get('FRONTEND_URL')
 
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+    
     msg = jsonify('Query inserted successfully')
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
