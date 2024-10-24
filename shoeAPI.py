@@ -1335,24 +1335,25 @@ def shoebrand_get():
     if conn is None:
         return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+  
+    url = os.environ.get('FRONTEND_URL')
     
-    rows = []
     try:
+
+        response = checkURL()
+        
+        if not response:
+            abort(403)   
 
         manufacture = request.args.get('manufacture_id')
         # itemId = 'FB7582-001'
-        # print(itemId)
-        getInfo = '''SELECT names, item_id, price ,images FROM shoe WHERE manufacture_id = %s '''
+        # print(itemId)       
+        
+        getInfo = '''SELECT md.manufacture_name, b.brand_name, sd.sex, sd.price FROM shoe AS sd, manufacture AS md, brand AS b WHERE manufacture_id = %s AND sd.manufacture_id = md.manufacture_id'''
         cur.execute(getInfo, [manufacture])
-        info = cur.fetchall()
+        brandObj = fetchObjectFromCursorAll(cur)
 
-        columns = ('names', 'item_id', 'price', 'images')
 
-        # creating dictionary
-        for row in info:
-            print(f"trying to serve {row}", file=sys.stderr)
-            rows.append({columns[i]: row[i] for i, _ in enumerate(columns)})
-            print(f"trying to serve {rows[-1]}", file=sys.stderr)
 
     except Exception as e:
         msg = 'Query Failed: %s\nError: %s' % (getInfo, str(e))
@@ -1362,9 +1363,15 @@ def shoebrand_get():
         conn.close()
         # need to do because conn still has a value
         conn = None 
+    
+    
+    msg = make_response(jsonify(brandObj))
+    msg.headers['Access-Control-Allow-Methods'] = 'GET'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = url
+    
+    return msg
         
-    return rows
-
 # @app.route('/search', methods=['GET'])
 # def search():
 
