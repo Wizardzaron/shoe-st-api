@@ -729,6 +729,8 @@ def sendemail_send():
     code = random.randrange(100000,999999)
     now = datetime.now()
 
+    #use .split to retrieve multiple urls and use ; as my parameter
+
     url = os.environ.get('FRONTEND_URL')
 
     try:
@@ -1329,11 +1331,11 @@ def shoedata_get():
 @app.route('/shoebrand', methods=['GET'])
 def shoebrand_get():
     
-    if not conn or conn.closed:
-        connect_to_database()
-        if conn.closed:
-            return jsonify({"message": "No connection"}), 503
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
     cur = conn.cursor()
+    
     rows = []
     try:
 
