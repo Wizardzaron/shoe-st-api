@@ -878,7 +878,7 @@ def allsizes_get():
         shoeObjSize = fetchObjectFromCursorAll(cur)
 
     except Exception as e:
-
+        msg = 'Query Failed: %s\nError: %s' % (getSize, str(e))
         return jsonify(msg)
 
     finally:
@@ -1349,7 +1349,18 @@ def shoebrand_get():
         # itemId = 'FB7582-001'
         # print(itemId)       
         
-        getInfo = '''SELECT md.manufacture_name, b.brand_name, sd.sex, sd.price FROM shoe AS sd, manufacture AS md, brand AS b WHERE manufacture_id = %s AND sd.manufacture_id = md.manufacture_id'''
+        getInfo = '''SELECT DISTINCT ON (sd.shoe_name) sd.shoe_name, md.manufacture_name, b.brand_name, sd.sex, sd.price, sd.id, i.image_url, i.image_id
+        FROM shoe AS sd
+        JOIN manufacture AS md ON sd.manufacture_id = md.manufacture_id 
+        JOIN brand AS b ON sd.brand_id = b.brand_id 
+        JOIN image AS i ON i.shoe_id = sd.id
+        WHERE sd.manufacture_id = %s 
+        AND i.main_image = 1 
+        AND i.shoe_id = sd.id 
+        ORDER BY sd.shoe_name'''
+    
+        
+        
         cur.execute(getInfo, [manufacture])
         brandObj = fetchObjectFromCursorAll(cur)
 
