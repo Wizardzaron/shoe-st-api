@@ -308,8 +308,17 @@ def itemdata_get():
             AND cts.size_id = sz.size_id 
             AND sz.shoe_id = sd.id'''
         cur.execute(getItem,[customer_id])
-        shoeObjItem = fetchObjectFromCursorAll(cur)    
-    
+        shoeObjItem = fetchObjectFromCursorAll(cur)   
+        
+        subTotal = 0
+        
+        for item in shoeObjItem:
+            # Check if the key exists in the dictionary
+            if "price" in item:
+                # Access the value associated with the key
+                subTotal += item["price"] * item["quantity"]
+          
+        data = {"subTotal": subTotal}      
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (getItem, str(err))
         return jsonify(msg)
@@ -319,7 +328,7 @@ def itemdata_get():
         # need to do because conn still has a value
         conn = None 
 
-    msg = make_response(jsonify(shoeObjItem))
+    msg = make_response(jsonify(shoeObjItem, data))
     msg.headers['Access-Control-Allow-Methods'] = 'GET'
     msg.headers['Access-Control-Allow-Credentials'] = 'true'
     msg.headers['Access-Control-Allow-Origin'] = url
@@ -773,8 +782,52 @@ def sendemail_send():
     return response
 
     
-
+@app.route('/changeshoesize', methods=['PATCH'])
+def changeshoesize_update():
     
+    conn = connect_to_database()
+    if conn is None:
+        return jsonify({"message": "No connection"}), 503
+    
+    url = os.environ.get('FRONTEND_URL')
+
+    try:
+        response = checkURL()
+        
+        if not response:
+            abort(403)     
+    except Exception as err:
+
+        msg = 'Error: %s' % (str(err))
+        return jsonify(msg)
+
+    cur = conn.cursor()   
+
+
+    size_id = request.args.get('id')
+    cart_item_id = request.args.get('cart_item_id')
+    print(size_id)
+
+    try:
+        sendPassCode = """UPDATE cartitems SET size_id = %s WHERE cart_item_id = %s"""
+        cur.execute(sendPassCode, [size_id,cart_item_id])
+        conn.commit()
+    except Exception as err:
+        pass
+    
+    finally:
+        conn.close()
+        # need to do because conn still has a value
+        conn = None 
+
+    msg = jsonify("Size has changed")
+    msg.headers['Access-Control-Allow-Methods'] = 'PATCH'
+    msg.headers['Access-Control-Allow-Credentials'] = 'true'
+    msg.headers['Access-Control-Allow-Origin'] = url
+    
+    return msg    
+
+
 
 # @app.route('/updateshoe', methods=['PATCH'])
 # def shoedata_update():
@@ -856,7 +909,7 @@ def allsizes_get():
 
     cur = conn.cursor()   
     
-    shoe_id = request.form.get('id')
+    shoe_id = request.args.get('id')
     print(shoe_id)
     
     url = os.environ.get('FRONTEND_URL')
@@ -873,7 +926,7 @@ def allsizes_get():
     
     try:
 
-        getSize = '''SELECT size FROM sizes WHERE shoe_id = %s AND in_stock > 0'''
+        getSize = '''SELECT size,size_id FROM sizes WHERE shoe_id = %s AND in_stock > 0'''
         cur.execute(getSize, [shoe_id])
         shoeObjSize = fetchObjectFromCursorAll(cur)
 
