@@ -18,6 +18,8 @@ import logging
 import hashlib
 import json
 
+
+#creates the flask object
 app = Flask(__name__)
 
 # supports_credentials allows us to use  include the Access-Control-Allow-Credentials header in the response. thus letting us to send cookies(thus allowing us to properly use sessions) or http authentication
@@ -195,7 +197,7 @@ def check_connection():
     else:
         return jsonify({"message": "Connection is established"}), 200
 
-@app.route('/cartitem', methods=['POST'])
+@app.route('/cartitem', methods=['GET','POST', 'PATCH'])
 def itemdata_post():
 
     
@@ -224,6 +226,7 @@ def itemdata_post():
     print("Cart item request data: " + json.dumps(data))
 
     size_id = int(data.get('size_id'))
+    shoe_id = int(data.get('shoe_id'))
     customer_id = session['id']
     print("/cartitem: customer: ", customer_id, " session: ", session['id'], " size_id: ", size_id)
 
@@ -234,7 +237,7 @@ def itemdata_post():
         row = cur.fetchone()
         if row is not None:
             cart_id = row[0]
-        else:
+        else:                
             #returning allows us to retrieve the values from the same query without needing to make a new one,
             # In an INSERT, the data available to RETURNING is the row as it was inserted.
             insertCustomerCart = """INSERT INTO cart (customer_id) VALUES (%s) RETURNING cart_id"""
@@ -243,16 +246,29 @@ def itemdata_post():
     except Exception as err:
         msg = 'Select Query Failed: %s\nError: %s' % (getCartItem, str(err))
         return jsonify(msg)
+    
     print(cart_id)
     
     
+    # If number of affected rows == 0 THEN
+    # INSERT INTO CART (….qty) VALUES (....1)
+    # Update cart set qy=qty+1. Where shoe=x and size=y and cartid=z
+    
+    
+    #THE PROBLEM IS THAT FOR THE ON CONFLICT CLAUSE I NEED A UNIQUE CONSTRAINT, MAYBE THERE'S A WAY TO INSERT USING CART_ID?
+    
     try:
-        insertItemData = """INSERT INTO cartitems (cart_id, size_id) VALUES (%s,%s)"""
-        cur.execute(insertItemData, [cart_id, size_id])
+        addCartItem = """INSERT INTO cartitems (cart_id, size_id, shoe_id,quantity) VALUES (%s,%s,%s, 1) ON CONFLICT (shoe_id,cart_id,size_id) 
+        DO UPDATE SET quantity = cartitems.quantity + 1 WHERE cartitems.shoe_id = %s"""
+        
+        cur.execute(addCartItem,[cart_id,size_id,shoe_id, shoe_id])
         conn.commit()
+                  
     except Exception as err:
-        msg = 'Insert Query Failed: %s\nError: %s' % (insertItemData, str(err))
+        msg = 'Insert Query Failed: %s\nError: %s' % (addCartItem, str(err))
         return jsonify(msg)
+    
+
 
     finally:
         conn.close()
