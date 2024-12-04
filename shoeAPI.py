@@ -136,8 +136,7 @@ def sendEmail(username, code, customerObjEmail):
 
 def hashingThePassword(password):
     
-    print("Hi")
-    print(password)
+    print("Hashing the password:" + password)
     pass_bytes = password.encode('utf-8')
     
     #256 does not encrypt, it hashs the values
@@ -1932,6 +1931,8 @@ def signup_post():
 
     url = os.environ.get('FRONTEND_URL')
 
+    print(email, firstname, lastname, passwd, streetaddress, username, zipcode, city, state)
+
     try:
         response = checkURL()
         
@@ -1944,11 +1945,11 @@ def signup_post():
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
-        return jsonify("password must be between 4 and 255")
+        return jsonify({"message" : "password must be between 4 and 255"}),406
 
     # username must be between 4 and 255
     if len(username) < 4 or len(username) > 255:
-        return jsonify("Username needs to be between 4 and 255 characters long.")
+        return jsonify({"message" : "Username needs to be between 4 and 255 characters long."}),406
 
     # check if email is valid
 
@@ -1961,15 +1962,15 @@ def signup_post():
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
-        return jsonify('Email not valid: ' + str(e))
+        return jsonify({"message" : 'Email not valid: ' + str(e)}),406
 
     # username cannot include whitespace
     if any(char.isspace() for char in username):
-        return jsonify('Username cannot have spaces in it.')
+        return jsonify({"message" : 'Username cannot have spaces in it.'}),406
 
     # email cannot include whitespace
     if any(char.isspace() for char in email):
-        return jsonify('Email cannot have spaces in it.')
+        return jsonify({"message" : 'Email cannot have spaces in it.'}),406
 
     # to select all column we will use
     getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
@@ -1979,10 +1980,17 @@ def signup_post():
     print("count of identical names: ", countOfUsername[0])
 
     if countOfUsername[0] != 0:
-        return jsonify('Username already exists.')
+        return jsonify({"message" : 'Username already exists.'}),406
 
     encrpytedPassword = hashingThePassword(passwd)
 
+    #in case the user doesn't send the zipcode, it'll check for None and ''
+    if not zipcode:
+        zipcode = 0
+     
+    print("This is the zipcode: " + str(zipcode))
+
+        
     # ready to insert into database
     try:
 
@@ -1995,14 +2003,18 @@ def signup_post():
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         msg.headers['Access-Control-Allow-Origin'] = url
+        msg.status_code = 200
+        # print(msg.headers['Access-Control-Allow-Origin'])
 
     except Exception as err:
         msg = 'Query Failed: %s\nError: %s' % (insertNewUser, str(err))
+        print("printing out the error message: " + msg)
         return jsonify(msg)
     finally:
         conn.close()
         # need to do because conn still has a value
         conn = None 
+    print("About to return a message" + str(msg.status_code))
     return msg
 
 @app.route('/updateshippingaddress', methods=['PATCH'])
