@@ -1962,15 +1962,15 @@ def signup_post():
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
-        return jsonify({"message" : 'Email not valid: ' + str(e)}),406
+        return jsonify({"message" : 'Email not valid: ' + str(e), "status" : 406}),406
 
     # username cannot include whitespace
     if any(char.isspace() for char in username):
-        return jsonify({"message" : 'Username cannot have spaces in it.'}),406
+        return jsonify({"message" : 'Username cannot have spaces in it.', "status" : 406}),406
 
     # email cannot include whitespace
     if any(char.isspace() for char in email):
-        return jsonify({"message" : 'Email cannot have spaces in it.'}),406
+        return jsonify({"message" : 'Email cannot have spaces in it.', "status" : 406}),406
 
     # to select all column we will use
     getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
@@ -1980,7 +1980,7 @@ def signup_post():
     print("count of identical names: ", countOfUsername[0])
 
     if countOfUsername[0] != 0:
-        return jsonify({"message" : 'Username already exists.'}),406
+        return jsonify({"message" : 'Username already exists.', "status" : 406}),406
 
     encrpytedPassword = hashingThePassword(passwd)
 
@@ -1999,7 +1999,7 @@ def signup_post():
                     email, firstname, lastname, encrpytedPassword, streetaddress, username, zipcode, city, state])
         conn.commit()
 
-        msg = jsonify('Query inserted successfully')
+        msg = jsonify("Query inserted successfully")
         msg.headers['Access-Control-Allow-Methods'] = 'POST'
         msg.headers['Access-Control-Allow-Headers'] = 'Content-Type'
         msg.headers['Access-Control-Allow-Origin'] = url
