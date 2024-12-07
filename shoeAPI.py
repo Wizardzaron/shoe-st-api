@@ -1945,11 +1945,11 @@ def signup_post():
 
     # password must be between 4 and 255
     if len(passwd) < 4 or len(passwd) > 255:
-        return jsonify({"message" : "password must be between 4 and 255"}),406
+        return jsonify({"message" : "password must be between 4 and 255", "status" : 400}),400
 
     # username must be between 4 and 255
     if len(username) < 4 or len(username) > 255:
-        return jsonify({"message" : "Username needs to be between 4 and 255 characters long."}),406
+        return jsonify({"message" : "Username needs to be between 4 and 255 characters long.", "status" : 400}),400
 
     # check if email is valid
 
@@ -1962,15 +1962,15 @@ def signup_post():
     except EmailNotValidError as e:
         # Email is not valid.
         # The exception message is human-readable.
-        return jsonify({"message" : 'Email not valid: ' + str(e), "status" : 406}),406
+        return jsonify({"message" : 'Email not valid: ' + str(e), "status" : 400}),400
 
     # username cannot include whitespace
     if any(char.isspace() for char in username):
-        return jsonify({"message" : 'Username cannot have spaces in it.', "status" : 406}),406
+        return jsonify({"message" : 'Username cannot have spaces in it.', "status" : 400}),400
 
     # email cannot include whitespace
     if any(char.isspace() for char in email):
-        return jsonify({"message" : 'Email cannot have spaces in it.', "status" : 406}),406
+        return jsonify({"message" : 'Email cannot have spaces in it.', "status" : 400}),400
 
     # to select all column we will use
     getCountByUsername = '''SELECT COUNT(*) FROM customer WHERE username = %s'''
@@ -1980,7 +1980,7 @@ def signup_post():
     print("count of identical names: ", countOfUsername[0])
 
     if countOfUsername[0] != 0:
-        return jsonify({"message" : 'Username already exists.', "status" : 406}),406
+        return jsonify({"message" : 'Username already exists.', "status" : 400}),400
 
     encrpytedPassword = hashingThePassword(passwd)
 
