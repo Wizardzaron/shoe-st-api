@@ -6,3 +6,7 @@ __pycache__/
 .pytest_cache/
 node_modules/
 *.db
+.history/
+
+# Personal study notes — not for public repo
+/walkthrough/
